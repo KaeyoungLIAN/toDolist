@@ -1,6 +1,7 @@
 .empty-state {
   display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 14px; padding: 70px 30px; color: var(--text-muted)
+  justify-content: flex-end; gap: 10px; padding: 20px 30px 40px;
+  color: var(--text-muted); margin-top: auto
 }
 .empty-icon { opacity: 0.2; margin-bottom: 2px }
 .empty-text { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; color: var(--text-tertiary) }
