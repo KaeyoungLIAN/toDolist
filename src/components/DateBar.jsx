@@ -2,6 +2,7 @@ import React from "react";
 import { t } from "../i18n";
 
 export default function DateBar({ dateStr, weekday, onPrev, onNext, onToday, onRefresh, lang }) {
+  const todayStr = new Date().toISOString().slice(0, 10);
   return (
     <div id="datebar">
       <div id="date-nav">
@@ -16,7 +17,9 @@ export default function DateBar({ dateStr, weekday, onPrev, onNext, onToday, onR
             <polyline points="9 18 15 12 9 6" />
           </svg>
         </button>
-        <button id="today-btn" onClick={onToday}>{t(lang, "today")}</button>
+        {dateStr !== todayStr && (
+          <button id="today-btn" onClick={onToday}>{t(lang, "today")}</button>
+        )}
       </div>
       <button id="refresh-btn" onClick={onRefresh}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
