@@ -7,7 +7,7 @@ use tauri::{
     AppHandle, Manager, State, WindowEvent,
     menu::{MenuBuilder, MenuItemBuilder},
     tray::TrayIconBuilder,
-    webview::{Effect, EffectsBuilder},
+    Effect,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -142,7 +142,7 @@ fn get_settings(app: AppHandle) -> Result<Settings, String> {
 fn update_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
     let path = settings_path(&app);
     // If data_dir changed, reload tasks from new location into state
-    let old = load_settings(&path);
+    let _old = load_settings(&path);
 
     save_settings(&path, &settings)?;
 
@@ -159,14 +159,14 @@ fn pick_directory(app: AppHandle) -> Result<Option<String>, String> {
     use tauri_plugin_dialog::DialogExt;
     let file = app.dialog()
         .file()
-        .pick_folder();
+        .blocking_pick_folder();
     Ok(file.map(|p| p.to_string()))
 }
 
 // ── Task commands ──
 
 #[tauri::command]
-fn get_tasks(state: State<'_, AppState>, app: AppHandle) -> Result<Vec<TaskItem>, String> {
+fn get_tasks(state: State<'_, AppState>, _app: AppHandle) -> Result<Vec<TaskItem>, String> {
     Ok(state.data.lock().map_err(|e| e.to_string())?.clone())
 }
 
@@ -311,9 +311,7 @@ pub fn run() {
                 });
 
                 #[cfg(target_os = "windows")]
-                w.set_effects(EffectsBuilder::new()
-                    .effect(Effect::Acrylic)
-                    .build())?;
+                let _ = w.set_effects(Effect::Acrylic);
             }
             Ok(())
         })
