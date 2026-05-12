@@ -4,10 +4,10 @@
   "version": "2.0.0",
   "identifier": "com.glasstodo.app",
   "build": {
-    "frontendDist": "../src",
+    "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "",
-    "beforeBuildCommand": ""
+    "beforeDevCommand": "npx vite",
+    "beforeBuildCommand": "npx vite build"
   },
   "app": {
     "windows": [{

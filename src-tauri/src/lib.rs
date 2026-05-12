@@ -1,9 +1,13 @@
-use chrono::Local;
+use chrono::{Datelike, Local};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Mutex;
-use tauri::{AppHandle, CustomMenuItem, Manager, Menu, State, WindowEvent, Wry};
+use tauri::{
+    AppHandle, Manager, State, WindowEvent,
+    menu::{MenuBuilder, MenuItemBuilder},
+    tray::TrayIconBuilder,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReminderData {
@@ -22,10 +26,54 @@ pub struct TaskItem {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct TodoData { pub tasks: Vec<TaskItem>, pub next_id: u32 }
 
-fn data_path(app: &AppHandle) -> PathBuf {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Settings {
+    pub language: String,
+    pub data_dir: Option<String>,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Settings {
+            language: "en".to_string(),
+            data_dir: None,
+        }
+    }
+}
+
+fn settings_path(app: &AppHandle) -> PathBuf {
     let dir = app.path().app_data_dir().expect("app data dir");
     fs::create_dir_all(&dir).ok();
-    dir.join("data.json")
+    dir.join("settings.json")
+}
+
+fn load_settings(path: &PathBuf) -> Settings {
+    if path.exists() {
+        if let Ok(c) = fs::read_to_string(path) {
+            if let Ok(s) = serde_json::from_str(&c) { return s; }
+        }
+    }
+    Settings::default()
+}
+
+fn save_settings(path: &PathBuf, settings: &Settings) -> Result<(), String> {
+    let json = serde_json::to_string_pretty(settings).map_err(|e| e.to_string())?;
+    let tmp = path.with_extension("json.tmp");
+    fs::write(&tmp, &json).map_err(|e| e.to_string())?;
+    fs::rename(&tmp, path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn data_path(app: &AppHandle, settings: &Settings) -> PathBuf {
+    if let Some(ref dir) = settings.data_dir {
+        let p = PathBuf::from(dir);
+        fs::create_dir_all(&p).ok();
+        p.join("data.json")
+    } else {
+        let dir = app.path().app_data_dir().expect("app data dir");
+        fs::create_dir_all(&dir).ok();
+        dir.join("data.json")
+    }
 }
 
 fn load_tasks(path: &PathBuf) -> TodoData {
@@ -72,15 +120,52 @@ fn update_last_reminded(tasks: &mut [TaskItem]) {
     }
 }
 
+// ── Settings commands ──
+
 #[tauri::command]
-fn get_tasks(state: State<'_, AppState>) -> Result<Vec<TaskItem>, String> {
+fn get_settings(app: AppHandle) -> Result<Settings, String> {
+    let path = settings_path(&app);
+    Ok(load_settings(&path))
+}
+
+#[tauri::command]
+fn update_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
+    let path = settings_path(&app);
+    // If data_dir changed, reload tasks from new location into state
+    let old = load_settings(&path);
+
+    save_settings(&path, &settings)?;
+
+    let state: State<'_, AppState> = app.state();
+    let new_path = data_path(&app, &settings);
+    let data = load_tasks(&new_path);
+    *state.data.lock().map_err(|e| e.to_string())? = data.tasks.clone();
+
+    Ok(())
+}
+
+#[tauri::command]
+fn pick_directory(app: AppHandle) -> Result<Option<String>, String> {
+    use tauri_plugin_dialog::DialogExt;
+    let file = app.dialog()
+        .file()
+        .pick_folder();
+    Ok(file.map(|p| p.to_string()))
+}
+
+// ── Task commands ──
+
+#[tauri::command]
+fn get_tasks(state: State<'_, AppState>, app: AppHandle) -> Result<Vec<TaskItem>, String> {
     Ok(state.data.lock().map_err(|e| e.to_string())?.clone())
 }
 
 #[tauri::command]
 fn add_task(state: State<'_, AppState>, app: AppHandle, content: String,
     reminder_type: String, reminder_data: ReminderData) -> Result<TaskItem, String> {
-    let path = data_path(&app);
+    let s_path = settings_path(&app);
+    let settings = load_settings(&s_path);
+    let path = data_path(&app, &settings);
     let mut data = load_tasks(&path);
     let task = TaskItem {
         id: data.next_id, content, completed: false,
@@ -95,7 +180,10 @@ fn add_task(state: State<'_, AppState>, app: AppHandle, content: String,
 
 #[tauri::command]
 fn update_task(state: State<'_, AppState>, app: AppHandle, task: TaskItem) -> Result<(), String> {
-    let path = data_path(&app); let mut data = load_tasks(&path);
+    let s_path = settings_path(&app);
+    let settings = load_settings(&s_path);
+    let path = data_path(&app, &settings);
+    let mut data = load_tasks(&path);
     if let Some(t) = data.tasks.iter_mut().find(|t| t.id == task.id) { *t = task; }
     save_tasks(&path, &data)?;
     *state.data.lock().map_err(|e| e.to_string())? = data.tasks.clone();
@@ -104,7 +192,10 @@ fn update_task(state: State<'_, AppState>, app: AppHandle, task: TaskItem) -> Re
 
 #[tauri::command]
 fn delete_task(state: State<'_, AppState>, app: AppHandle, id: u32) -> Result<(), String> {
-    let path = data_path(&app); let mut data = load_tasks(&path);
+    let s_path = settings_path(&app);
+    let settings = load_settings(&s_path);
+    let path = data_path(&app, &settings);
+    let mut data = load_tasks(&path);
     data.tasks.retain(|t| t.id != id);
     save_tasks(&path, &data)?;
     *state.data.lock().map_err(|e| e.to_string())? = data.tasks.clone();
@@ -113,7 +204,10 @@ fn delete_task(state: State<'_, AppState>, app: AppHandle, id: u32) -> Result<()
 
 #[tauri::command]
 fn toggle_complete(state: State<'_, AppState>, app: AppHandle, id: u32) -> Result<(), String> {
-    let path = data_path(&app); let mut data = load_tasks(&path);
+    let s_path = settings_path(&app);
+    let settings = load_settings(&s_path);
+    let path = data_path(&app, &settings);
+    let mut data = load_tasks(&path);
     if let Some(t) = data.tasks.iter_mut().find(|t| t.id == id) { t.completed = !t.completed; }
     save_tasks(&path, &data)?;
     *state.data.lock().map_err(|e| e.to_string())? = data.tasks.clone();
@@ -122,7 +216,10 @@ fn toggle_complete(state: State<'_, AppState>, app: AppHandle, id: u32) -> Resul
 
 #[tauri::command]
 fn check_and_notify(state: State<'_, AppState>, app: AppHandle) -> Result<Vec<String>, String> {
-    let path = data_path(&app); let mut data = load_tasks(&path);
+    let s_path = settings_path(&app);
+    let settings = load_settings(&s_path);
+    let path = data_path(&app, &settings);
+    let mut data = load_tasks(&path);
     let now = Local::now(); let mut alerts = vec![];
     let today_wd = now.weekday().num_days_from_sunday() as u8;
     use tauri_plugin_notification::NotificationExt;
@@ -133,7 +230,7 @@ fn check_and_notify(state: State<'_, AppState>, app: AppHandle) -> Result<Vec<St
                 if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(dt, "%Y-%m-%dT%H:%M:%S") {
                     if dt <= now.naive_local() && t.last_reminded.is_none() {
                         alerts.push(t.content.clone());
-                        app.notification().builder().title(&t.content).body("单次提醒").show().ok();
+                        app.notification().builder().title(&t.content).body("Single reminder").show().ok();
                     }
                 }
             }
@@ -142,7 +239,7 @@ fn check_and_notify(state: State<'_, AppState>, app: AppHandle) -> Result<Vec<St
                 if now.date_naive().and_time(rt) <= now.naive_local()
                     && t.last_reminded.as_deref() != Some(&now.format("%Y-%m-%d").to_string()) {
                     alerts.push(t.content.clone());
-                    app.notification().builder().title(&t.content).body("每周提醒").show().ok();
+                    app.notification().builder().title(&t.content).body("Weekly reminder").show().ok();
                 }
             }
         }
@@ -159,30 +256,37 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            let path = data_path(&app.handle());
+            let s_path = settings_path(&app.handle());
+            let settings = load_settings(&s_path);
+            let path = data_path(&app.handle(), &settings);
             let data = load_tasks(&path);
             app.manage(AppState { data: Mutex::new(data.tasks.clone()) });
 
-            let show = CustomMenuItem::new("show".to_string(), "显示主窗口");
-            let quit = CustomMenuItem::new("quit".to_string(), "退出");
-            let tray_menu = Menu::with_items([show, quit]).unwrap();
-            let tray = app.tray_by_id("main").unwrap();
-            tray.set_menu(Some(tray_menu)).ok();
-            tray.on_menu_event(|app, event| match event.id.as_ref() {
-                "show" => { if let Some(w) = app.get_webview_window("main") { w.show().ok(); w.set_focus().ok(); } }
-                "quit" => app.exit(0),
-                _ => {}
-            });
+            let show = MenuItemBuilder::with_id("show", "Show window").build(app)?;
+            let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
+            let menu = MenuBuilder::new(app).item(&show).item(&quit).build()?;
+            TrayIconBuilder::new()
+                .menu(&menu)
+                .on_menu_event(|app, event| match event.id().as_ref() {
+                    "show" => { if let Some(w) = app.get_webview_window("main") { w.show().ok(); w.set_focus().ok(); } }
+                    "quit" => app.exit(0),
+                    _ => {}
+                })
+                .build(app)?;
 
             if let Some(w) = app.get_webview_window("main") {
-                w.on_window_event(move |event| {
+                w.clone().on_window_event(move |event| {
                     if let WindowEvent::CloseRequested { .. } = event { w.hide().ok(); }
                 });
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_tasks, add_task, update_task, delete_task, toggle_complete, check_and_notify])
+        .invoke_handler(tauri::generate_handler![
+            get_tasks, add_task, update_task, delete_task, toggle_complete, check_and_notify,
+            get_settings, update_settings, pick_directory,
+        ])
         .run(tauri::generate_context!())
         .expect("error running GlassTodo");
 }

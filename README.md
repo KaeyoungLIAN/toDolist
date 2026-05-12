@@ -1,8 +1,8 @@
 # GlassTodo
 
-**Version**: v2.1 · **Stack**: Tauri 2 (Rust + HTML/CSS/JS) · **Binary**: ~5MB, zero runtime deps · **Platform**: Windows / macOS / Linux
+**Version**: v3.0 · **Stack**: Tauri 2 (Rust + React 19) · **Binary**: ~5MB, zero runtime deps · **Platform**: Windows / macOS / Linux
 
-A premium, dark-glass todo app with reminder scheduling. Built with Tauri's Rust backend for notification and system tray support, and a vanilla frontend with **taste-ui** design principles — no emojis, no AI purple, no generic cards.
+A premium, dark-glass todo app with reminder scheduling. Built with React 19 + taste-ui design principles — no emojis, no AI purple, no generic cards, proper state management.
 
 ---
 
@@ -89,10 +89,17 @@ Double-click `build.bat` — checks Rust, runs npm install, builds.
 
 ```
 toDolist/
-├── src/                    ← Frontend (vanilla HTML/CSS/JS)
-│   ├── index.html          ← Layout
+├── src/                    ← React 19 frontend
+│   ├── index.html
+│   ├── main.jsx            ← React entry
+│   ├── App.jsx             ← Main app (state management)
 │   ├── style.css           ← Dark glass theme (taste-ui)
-│   └── main.js             ← Tauri API calls + interactivity
+│   └── components/
+│       ├── TitleBar.jsx    ← Window controls (pin/min/close)
+│       ├── DateBar.jsx     ← Date navigation
+│       ├── TaskList.jsx    ← Task list container
+│       ├── TaskCard.jsx    ← Single task card
+│       └── BottomPanel.jsx ← Input panel + reminder config
 ├── src-tauri/              ← Tauri + Rust backend
 │   ├── Cargo.toml
 │   ├── tauri.conf.json
@@ -102,6 +109,7 @@ toDolist/
 │       ├── main.rs
 │       └── lib.rs          ← CRUD, notifications, tray
 ├── package.json
+├── vite.config.js
 ├── build.bat
 └── README.md
 ```

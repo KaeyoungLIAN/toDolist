@@ -1,6 +1,7 @@
 src-tauri/target/
 node_modules/
 package-lock.json
+dist/
 *.exe
 *.msi
 .DS_Store
