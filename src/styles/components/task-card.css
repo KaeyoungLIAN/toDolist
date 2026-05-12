@@ -75,6 +75,7 @@
 
 /* ── Drag handle ── */
 .drag-wrapper { position: relative }
+.drag-wrapper.dragging .task-card { opacity: 0.4 }
 .drag-wrapper.drag-over::after {
   content: ''; position: absolute; top: -3px; left: 4px; right: 4px;
   height: 2px; background: var(--accent); border-radius: 2px; z-index: 10; opacity: 0.6
