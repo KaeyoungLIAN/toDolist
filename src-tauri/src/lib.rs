@@ -7,7 +7,7 @@ use tauri::{
     AppHandle, Manager, State, WindowEvent,
     menu::{MenuBuilder, MenuItemBuilder},
     tray::TrayIconBuilder,
-    utils::config::{WindowEffect, WindowEffectsConfig},
+    window::{Effect, EffectsBuilder},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -311,10 +311,9 @@ pub fn run() {
                 });
 
                 #[cfg(target_os = "windows")]
-                w.set_effects(WindowEffectsConfig {
-                    effects: vec![WindowEffect::Acrylic],
-                    ..Default::default()
-                })?;
+                w.set_effects(EffectsBuilder::new()
+                    .effect(Effect::Acrylic)
+                    .build())?;
             }
             Ok(())
         })
