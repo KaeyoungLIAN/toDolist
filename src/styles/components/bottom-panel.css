@@ -48,40 +48,50 @@
 .mode-pill.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(16, 185, 129, 0.25) }
 .mode-pill svg { flex-shrink: 0 }
 
-/* ── Reminder options (always visible in scheduled mode) ── */
+/* ── Reminder options (tab-style) ── */
 #reminder-options { padding-top: 6px; display: flex; flex-direction: column; gap: 6px }
 
-.reminder-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 4px 6px; border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
+/* Tab bar */
+#rtype-tabs {
+  display: flex; gap: 6px;
 }
-.reminder-row:hover { background: rgba(255,255,255,0.03) }
 
-.reminder-pickers { display: flex; align-items: center; gap: 6px; flex: 1 }
+.rtype-tab {
+  position: relative; flex: 1; padding: 6px 0;
+  background: var(--bg-input); border: 1px solid transparent;
+  border-radius: 6px; color: var(--text-tertiary);
+  font-size: 11px; font-weight: 600; font-family: inherit;
+  cursor: pointer; letter-spacing: 0.03em;
+  transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.rtype-tab:hover { background: var(--bg-glass-hover); color: var(--text-secondary); transform: translateY(-1px) }
+.rtype-tab:active { transform: scale(0.97) translateY(0) }
+.rtype-tab.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: rgba(16, 185, 129, 0.25);
+}
 
-.radio-label {
-  display: flex; align-items: center; gap: 6px; cursor: pointer;
-  font-size: 12px; color: var(--text-secondary); position: relative;
-  padding: 3px 6px 3px 4px; border-radius: 4px;
-  margin: -3px 0 -3px -4px; transition: background 150ms;
+/* Glow effect on active tab */
+.rtype-tab-glow {
+  position: absolute; top: 50%; left: 50%;
+  width: 0; height: 0; pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: all 400ms var(--ease-spring);
 }
-.radio-label:hover { background: rgba(255,255,255,0.04) }
-.radio-label.active { background: var(--accent-dim); border-radius: 4px }
-.radio-label input { display: none }
-.radio-dot {
-  width: 14px; height: 14px; border: 2px solid var(--text-muted);
-  border-radius: 50%; transition: border-color 150ms; position: relative; flex-shrink: 0
+.rtype-tab.active .rtype-tab-glow {
+  width: 80px; height: 80px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
 }
-.radio-label input:checked + .radio-dot { border-color: var(--accent) }
-.radio-label input:checked + .radio-dot::after {
-  content: ''; position: absolute; top: 1px; left: 1px;
-  width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
-  animation: dot-pop 200ms var(--ease-spring);
-}
-.radio-label > span:last-child { line-height: 1 }
 
-#day-picker { display: flex; gap: 4px }
+/* Content panel */
+#rtype-panel { padding: 2px 0 }
+
+.rtype-pickers { display: flex; align-items: center; gap: 6px }
+
+.picker-sep { font-size: 12px; color: var(--text-muted); flex-shrink: 0 }
 
 .day-btn {
   width: 26px; height: 26px; background: var(--bg-day-btn);
