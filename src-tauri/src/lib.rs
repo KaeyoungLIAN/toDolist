@@ -306,8 +306,9 @@ pub fn run() {
                 .build(app)?;
 
             if let Some(w) = app.get_webview_window("main") {
+                let w_ = w.clone();
                 w.clone().on_window_event(move |event| {
-                    if let WindowEvent::CloseRequested { .. } = event { w.hide().ok(); }
+                    if let WindowEvent::CloseRequested { .. } = event { w_.hide().ok(); }
                 });
 
                 #[cfg(target_os = "windows")]
