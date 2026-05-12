@@ -3,7 +3,7 @@ import { t } from "../i18n";
 
 const WN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default function TaskCard({ task, index, onToggle, onDelete, onEdit, onPin, lang, deletingId, completingId }) {
+export default function TaskCard({ task, index, onToggle, onDelete, onEdit, onPin, lang, deletingId, completingId, onDragStart, onKeyDown }) {
   const isDeleting = task.id === deletingId;
   const isCompleting = task.id === completingId;
   return (
@@ -11,7 +11,15 @@ export default function TaskCard({ task, index, onToggle, onDelete, onEdit, onPi
       className={"task-card" + (task.completed ? " completed" : "") + (isDeleting ? " deleting" : "") + (isCompleting ? " completing" : "")}
       style={{ animationDelay: `${index * 40}ms` }}
     >
-      <span className="drag-handle" title="Drag to reorder">
+      <span
+        className="drag-handle"
+        title="Drag to reorder"
+        onMouseDown={(e) => { if (onDragStart && e.button === 0) onDragStart(e); }}
+        tabIndex={0}
+        role="button"
+        aria-label="Drag to reorder"
+        onKeyDown={onKeyDown}
+      >
         <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
           <circle cx="9" cy="5" r="2" /><circle cx="15" cy="5" r="2" />
           <circle cx="9" cy="12" r="2" /><circle cx="15" cy="12" r="2" />
