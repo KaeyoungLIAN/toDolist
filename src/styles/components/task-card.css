@@ -73,6 +73,12 @@
 .pin-btn:hover { background: var(--accent-dim); color: var(--accent); transform: translateY(-1px) !important }
 .pin-btn:active { transform: scale(0.85) translateY(0) !important }
 
+/* ── Persist button (daily repeat) ── */
+.persist-btn { color: var(--text-muted) }
+.persist-btn.active { color: #f59e0b }
+.persist-btn:hover { background: rgba(245,158,11,0.12); color: #f59e0b; transform: translateY(-1px) !important }
+.persist-btn:active { transform: scale(0.85) translateY(0) !important }
+
 /* ── Reorder buttons ── */
 .drag-wrapper { position: relative }
 .reorder-btns {
