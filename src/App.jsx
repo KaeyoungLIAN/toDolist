@@ -87,7 +87,7 @@ export default function App() {
         if (!showCompleted && t.completed) return false;
         if (q && !t.content.toLowerCase().includes(q)) return false;
         const td = taskDate(t);
-        return td === dateStr || t.reminder_type === "weekly";
+        return td === dateStr || t.reminder_type === "weekly" || t.persist;
       }
     )
     .sort((a, b) => {
@@ -215,6 +215,19 @@ export default function App() {
     [tasks, loadTasks]
   );
 
+  const togglePersist = useCallback(
+    async (id) => {
+      try {
+        const t = tasks.find((x) => x.id === id);
+        if (t) {
+          await invoke("update_task", { task: { ...t, persist: !t.persist } });
+          await loadTasks();
+        }
+      } catch (_) {}
+    },
+    [tasks, loadTasks]
+  );
+
   const handleReorder = useCallback(
     async (ids) => {
       try {
@@ -282,7 +295,7 @@ export default function App() {
           )}
         </div>
       )}
-      {/* Stats + Save row */}
+      {/* Stats row */}
       {!showSearch && (
         <div className="stats-line">
           {(yesterdayCompleted > 0 || weekCompleted > 0) && (
@@ -292,20 +305,6 @@ export default function App() {
               {weekCompleted > 0 && <span>{t(lang, "thisWeek")} {weekCompleted}</span>}
             </>
           )}
-          <button className="save-btn" onClick={async () => {
-            try {
-              // Force a save by toggling show_completed in settings
-              const s = await invoke("get_settings");
-              await invoke("update_settings", { settings: { ...s } });
-              showToast("✅ " + t(lang, "saved"));
-            } catch { showToast("⚠️ " + t(lang, "error")); }
-          }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-              <polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" />
-            </svg>
-            <span>{t(lang, "save")}</span>
-          </button>
         </div>)}
       <TaskList
         tasks={filtered}
@@ -320,6 +319,7 @@ export default function App() {
         lang={lang}
         deletingId={deletingId}
         completingId={completingId}
+        onTogglePersist={togglePersist}
       />
       <BottomPanel
         editingId={editingId}
