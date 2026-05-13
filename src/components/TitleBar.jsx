@@ -21,8 +21,13 @@ export default function TitleBar({ onOpenSettings, showSearch, onToggleSearch, l
         closeHelp();
       }
     };
+    const handleKey = (e) => { if (e.key === "Escape") closeHelp(); };
     document.addEventListener("mousedown", handle);
-    return () => document.removeEventListener("mousedown", handle);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handle);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, [showHelp]);
 
   return (
