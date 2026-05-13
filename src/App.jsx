@@ -87,7 +87,7 @@ export default function App() {
         if (completingId === t.id) return true;
         if (!showCompleted && t.completed) return false;
         if (q && !t.content.toLowerCase().includes(q)) return false;
-        return t.completed || t.reminder_type === "weekly" ||
+        return t.persist || t.completed || t.reminder_type === "weekly" ||
           (t.reminder_data.datetime && t.reminder_data.datetime.startsWith(dateStr));
       }
     )
@@ -249,6 +249,7 @@ export default function App() {
   const goPrev = () => setCurrentDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1));
   const goNext = () => setCurrentDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
   const goToday = () => setCurrentDate(new Date());
+  const goToDate = (d) => setCurrentDate(d);
 
   const handleRefresh = useCallback(() => {
     const btn = document.getElementById("refresh-btn");
@@ -279,6 +280,7 @@ export default function App() {
         onNext={goNext}
         onToday={goToday}
         onRefresh={handleRefresh}
+        onGoToDate={goToDate}
         lang={lang}
       />
       {showSearch && (
