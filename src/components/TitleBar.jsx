@@ -82,6 +82,12 @@ export default function TitleBar({ onOpenSettings, showSearch, onToggleSearch, l
           <div className="help-popover-list">
             <div className="help-item">
               <svg className="help-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+              </svg>
+              <span>{lang === "zh" ? "输入文字后：点[普通]直接创建当天任务，点[定时]可设日期/重复提醒" : "Type text: [Normal] adds for today, [Scheduled] sets date or repeat reminder"}</span>
+            </div>
+            <div className="help-item">
+              <svg className="help-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
               <span>{lang === "zh" ? "点勾完成任务" : "Check to complete"}</span>
