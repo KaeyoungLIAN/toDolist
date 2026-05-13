@@ -6,7 +6,7 @@ export default function TitleBar({ onOpenSettings, showSearch, onToggleSearch, l
   const [helpClosing, setHelpClosing] = useState(false);
   const helpRef = useRef(null);
   const handleMin = async () => { try { await invoke("minimize_window"); } catch (e) { console.error("minimize:", e); } };
-  const handleClose = async () => { try { await invoke("hide_window"); } catch (e) { console.error("hide:", e); } };
+  const handleClose = async () => { try { await invoke("minimize_window"); } catch (e) { console.error("close:", e); } };
 
   const closeHelp = () => {
     setHelpClosing(true);
@@ -64,7 +64,7 @@ export default function TitleBar({ onOpenSettings, showSearch, onToggleSearch, l
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
           </button>
-          <button className="title-btn close-btn" id="close-btn" title="Hide to tray" onClick={handleClose}>
+          <button className="title-btn close-btn" id="close-btn" title={lang === "zh" ? "最小化到任务栏" : "Minimize to taskbar"} onClick={handleClose}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>

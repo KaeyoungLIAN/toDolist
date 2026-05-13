@@ -18,12 +18,7 @@
       "decorations": false, "transparent": true,
       "shadow": false
     }],
-    "security": { "csp": null },
-    "trayIcon": {
-      "iconPath": "icons/icon.png",
-      "iconAsTemplate": true,
-      "tooltip": "GlassTodo"
-    }
+    "security": { "csp": null }
   },
   "bundle": {
     "active": true,

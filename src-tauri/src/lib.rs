@@ -5,8 +5,6 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use tauri::{
     AppHandle, Manager, State, WindowEvent,
-    menu::{MenuBuilder, MenuItemBuilder},
-    tray::TrayIconBuilder,
     window::{Effect, EffectsBuilder},
 };
 
@@ -184,14 +182,6 @@ fn minimize_window(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-#[tauri::command]
-fn hide_window(app: AppHandle) -> Result<(), String> {
-    if let Some(w) = app.get_webview_window("main") {
-        w.hide().map_err(|e| e.to_string())?;
-    }
-    Ok(())
-}
-
 // ── Task commands ──
 
 #[tauri::command]
@@ -322,22 +312,10 @@ pub fn run() {
             let data = load_tasks(&path);
             app.manage(AppState { data: Mutex::new(data.tasks.clone()) });
 
-            let show = MenuItemBuilder::with_id("show", "Show window").build(app)?;
-            let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
-            let menu = MenuBuilder::new(app).item(&show).item(&quit).build()?;
-            TrayIconBuilder::new()
-                .menu(&menu)
-                .on_menu_event(|app, event| match event.id().as_ref() {
-                    "show" => { if let Some(w) = app.get_webview_window("main") { w.show().ok(); w.set_focus().ok(); } }
-                    "quit" => app.exit(0),
-                    _ => {}
-                })
-                .build(app)?;
-
             if let Some(w) = app.get_webview_window("main") {
                 let w2 = w.clone();
                 w.clone().on_window_event(move |event| {
-                    if let WindowEvent::CloseRequested { .. } = event { w2.hide().ok(); }
+                    if let WindowEvent::CloseRequested { .. } = event { w2.minimize().ok(); }
                 });
 
                 #[cfg(target_os = "windows")]
@@ -350,7 +328,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_tasks, add_task, update_task, delete_task, toggle_complete, check_and_notify,
             get_settings, update_settings, pick_directory, reorder_tasks,
-            minimize_window, hide_window,
+            minimize_window,
         ])
         .run(tauri::generate_context!())
         .expect("error running GlassTodo");

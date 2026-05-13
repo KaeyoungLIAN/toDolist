@@ -85,55 +85,11 @@ const i18n = {
     dark: "暗色",
     light: "亮色",
   },
-  ja: {
-    appName: "グラスTodo",
-    whatNeedsDone: "何をしますか？",
-    addTask: "タスク追加",
-    updateTask: "タスク更新",
-    emptyInput: "テキストを入力してください",
-    quickGuide: "クイックガイド",
-    showWelcome: "ウェルカムガイドを表示",
-    welcomeTitle: "GlassTodo へようこそ",
-    welcomeDesc: "GlassTodo は、ガラス調デザインのデスクトップTodoアプリです。日常のタスクを素早く作成し、一回限りや毎週のリマインダーを設定できます。固定や保存機能でタスクを管理しましょう。",
-    oneTime: "一回",
-    weekly: "毎週",
-    done: "完了",
-    deleteCancelled: "削除をキャンセル",
-    taskUpdated: "タスクを更新",
-    taskAdded: "タスクを追加",
-    error: "エラー",
-    today: "今日",
-    settings: "設定",
-    language: "言語",
-    dataDir: "データディレクトリ",
-    chooseFolder: "フォルダを選択",
-    defaultLocation: "デフォルト（アプリデータ）",
-    close: "閉じる",
-    deletePrefix: "削除しました",
-    sun: "日", mon: "月", tue: "火", wed: "水", thu: "木", fri: "金", sat: "土",
-    noTasks: "タスクなし",
-    noTasksHint: "下に入力してEnterで追加",
-    showCompleted: "完了タスクを表示",
-    normal: "通常",
-    scheduled: "スケジュール",
-    persist: "テンプレート保存",
-    undo: "元に戻す",
-    yes: "はい",
-    no: "いいえ",
-    pinned: "固定",
-    searchPlaceholder: "タスクを検索...",
-    yesterday: "昨日完了",
-    thisWeek: "今週完了",
-    theme: "テーマ",
-    dark: "ダーク",
-    light: "ライト",
-  },
 };
 
 const LANG_NAMES = {
   en: "English",
   zh: "中文",
-  ja: "日本語",
 };
 
 export function t(lang, key) {
@@ -148,26 +104,23 @@ export function weekdayNames(lang) {
 /** Day labels for the weekly picker buttons — short form */
 export function dayLabels(lang) {
   if (lang === "zh") return ["一","二","三","四","五","六","日"];
-  if (lang === "ja") return ["月","火","水","木","金","土","日"];
   return ["M","T","W","T","F","S","S"]; // en default
 }
 
 /** Month names for the DatePicker calendar header */
 export function monthNames(lang) {
   if (lang === "zh") return ["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"];
-  if (lang === "ja") return ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
   return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 }
 
 /** Short weekday labels in Sun-Sat order for calendar grids */
 export function weekdayShort(lang) {
   if (lang === "zh") return ["日","一","二","三","四","五","六"];
-  if (lang === "ja") return ["日","月","火","水","木","金","土"];
   return ["S","M","T","W","T","F","S"];
 }
 
 export function availableLangs() {
   // zh first per user preference
-  const order = ["zh", "en", "ja"];
+  const order = ["zh", "en"];
   return order.filter((code) => i18n[code]).map((code) => ({ code, name: LANG_NAMES[code] || code }));
 }
