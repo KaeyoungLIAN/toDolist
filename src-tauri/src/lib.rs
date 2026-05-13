@@ -7,6 +7,7 @@ use tauri::{
     AppHandle, Manager, State, WindowEvent,
     menu::{MenuBuilder, MenuItemBuilder},
     tray::TrayIconBuilder,
+    window::{Effect, EffectsBuilder},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -331,6 +332,11 @@ pub fn run() {
                 w.clone().on_window_event(move |event| {
                     if let WindowEvent::CloseRequested { .. } = event { w2.hide().ok(); }
                 });
+
+                #[cfg(target_os = "windows")]
+                w.set_effects(EffectsBuilder::new()
+                    .effect(Effect::Acrylic)
+                    .build())?;
             }
             Ok(())
         })
