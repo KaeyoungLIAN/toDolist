@@ -19,6 +19,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
   const [weeklyTime, setWeeklyTime] = useState("09:00");
   const [expanded, setExpanded] = useState(false);
   const inputRef = useRef(null);
+  const userSetOnceRef = useRef(false);
 
   // Auto-expand when editing
   useEffect(() => {
@@ -39,7 +40,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
     }
   }, [editingId]);
 
-  useEffect(() => { setOnceDate(dateStr); }, [dateStr]);
+  useEffect(() => { if (!userSetOnceRef.current) setOnceDate(dateStr); }, [dateStr]);
 
   const toggleDay = (d) => {
     setActiveDays((prev) => {
@@ -76,6 +77,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
       setTaskMode("normal");
       setOnceDate(dateStr);
       setOnceTime("14:30");
+      userSetOnceRef.current = false;
     }
     inputRef.current?.focus();
   };
@@ -159,7 +161,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
             </div>
             {rtype === "once" ? (
               <div className="picker-line">
-                <DatePicker value={onceDate} onChange={setOnceDate} lang={lang} />
+                <DatePicker value={onceDate} onChange={(v) => { userSetOnceRef.current = true; setOnceDate(v); }} lang={lang} />
                 <span className="picker-sep">–</span>
                 <TimePicker value={onceTime} onChange={setOnceTime} />
               </div>
