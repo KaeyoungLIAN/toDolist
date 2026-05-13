@@ -4,6 +4,6 @@
   color: var(--text-muted); margin-top: auto
 }
 .empty-icon { opacity: 0.2; margin-bottom: 2px }
-.empty-text { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; color: var(--text-tertiary) }
-.empty-hint { font-size: 12px; color: var(--text-muted); font-weight: 400; letter-spacing: 0.01em }
+.empty-text { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; color: var(--text-secondary) }
+.empty-hint { font-size: 12px; color: var(--text-tertiary); font-weight: 400; letter-spacing: 0.01em }
 .empty-divider { width: 30px; height: 1px; background: var(--border-glass); border: none; margin: 2px 0 }
