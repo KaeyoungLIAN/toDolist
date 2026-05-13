@@ -87,8 +87,15 @@ export default function App() {
         if (completingId === t.id) return true;
         if (!showCompleted && t.completed) return false;
         if (q && !t.content.toLowerCase().includes(q)) return false;
-        return (t.persist && dateStr >= t.created_at.slice(0, 10)) || t.completed || t.reminder_type === "weekly" ||
-          (t.reminder_data.datetime && t.reminder_data.datetime.startsWith(dateStr));
+        // Persist tasks: show from creation date onwards
+        if (t.persist && dateStr >= t.created_at.slice(0, 10)) return true;
+        // Completed tasks: only on the date they were due
+        if (t.completed && taskDate(t) === dateStr) return true;
+        // Weekly tasks: only on matching weekday
+        if (t.reminder_type === "weekly" && t.reminder_data.days.includes(currentDate.getDay())) return true;
+        // One-time tasks: match their datetime
+        if (t.reminder_data.datetime && t.reminder_data.datetime.startsWith(dateStr)) return true;
+        return false;
       }
     )
     .sort((a, b) => {
@@ -282,6 +289,8 @@ export default function App() {
         onRefresh={handleRefresh}
         onGoToDate={goToDate}
         lang={lang}
+        yesterdayCompleted={yesterdayCompleted}
+        weekCompleted={weekCompleted}
       />
       {showSearch && (
         <div className="search-bar">
@@ -303,13 +312,6 @@ export default function App() {
               </svg>
             </button>
           )}
-        </div>
-      )}
-      {(yesterdayCompleted > 0 || weekCompleted > 0) && !showSearch && (
-        <div className="stats-line">
-          {yesterdayCompleted > 0 && <span>{t(lang, "yesterday")} {yesterdayCompleted}</span>}
-          {yesterdayCompleted > 0 && weekCompleted > 0 && <span className="stats-dot">·</span>}
-          {weekCompleted > 0 && <span>{t(lang, "thisWeek")} {weekCompleted}</span>}
         </div>
       )}
       <TaskList
