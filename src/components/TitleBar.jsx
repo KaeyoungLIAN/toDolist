@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const HELP_EN = {
   title: "Task Operations",
   items: [
     { icon: "check", label: "Checkbox — mark complete / undo" },
-    { icon: "arrow", label: "Arrow buttons — reorder task" },
     { icon: "pin", label: "Pin — keep at top of list" },
-    { icon: "persist", label: "Persist — show on every date view" },
     { icon: "edit", label: "Edit — modify text or reminder" },
     { icon: "delete", label: "Delete — swipe away, 5s undo" },
   ],
@@ -17,9 +15,7 @@ const HELP_ZH = {
   title: "任务操作说明",
   items: [
     { icon: "check", label: "勾选 — 标记完成 / 撤销" },
-    { icon: "arrow", label: "上下箭头 — 调整任务顺序" },
     { icon: "pin", label: "置顶 — 固定在列表顶部" },
-    { icon: "persist", label: "持久化 — 在每个日期视图显示" },
     { icon: "edit", label: "编辑 — 修改内容或提醒" },
     { icon: "delete", label: "删除 — 滑出屏幕，5秒内可撤销" },
   ],
@@ -28,9 +24,7 @@ const HELP_ZH = {
 
 const SVG_ICONS = {
   check: <polyline points="20 6 9 17 4 12" />,
-  arrow: <polyline points="18 15 12 9 6 15" />,
   pin: <><line x1="12" y1="3" x2="12" y2="16" /><polyline points="7 10 12 3 17 10" /></>,
-  persist: <><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></>,
   edit: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></>,
   delete: <><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></>,
 };
@@ -43,10 +37,7 @@ export default function TitleBar({ onOpenSettings, showSearch, onToggleSearch, l
 
   const handleCloseHelp = useCallback(() => {
     setIsClosing(true);
-    setTimeout(() => {
-      setShowHelp(false);
-      setIsClosing(false);
-    }, 150);
+    setTimeout(() => { setShowHelp(false); setIsClosing(false); }, 150);
   }, []);
 
   useEffect(() => {

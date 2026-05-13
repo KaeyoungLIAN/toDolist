@@ -89,9 +89,3 @@
   margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-glass);
   font-size: 10px; color: var(--text-muted); line-height: 1.5;
 }
-.help-key {
-  display: inline-block; padding: 0 4px; height: 16px; line-height: 16px;
-  background: var(--bg-surface); border: 1px solid var(--border-glass);
-  border-radius: 3px; font-size: 9px; font-weight: 500; color: var(--text-tertiary);
-  font-family: inherit;
-}
