@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { t } from "../i18n";
-import { dayLabels } from "../i18n";
 import DatePicker from "./DatePicker";
 import TimePicker from "./TimePicker";
 
@@ -8,7 +7,11 @@ function fmt(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-const DAY_KEYS = [1, 2, 3, 4, 5, 6, 0];
+const DAYS = [
+  { key: 1, label: "M" }, { key: 2, label: "T" }, { key: 3, label: "W" },
+  { key: 4, label: "T" }, { key: 5, label: "F" }, { key: 6, label: "S" },
+  { key: 0, label: "S" },
+];
 const DAYS_MAP = { 0: "S", 1: "M", 2: "T", 3: "W", 4: "T", 5: "F", 6: "S" };
 
 export default function BottomPanel({ editingId, editText, editRtype, editRdata, onSave, onCancelEdit, dateStr, lang }) {
@@ -141,7 +144,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
           </svg>
-          <span>Normal</span>
+          <span>{t(lang, "normal")}</span>
         </button>
         <button
           className={"mode-pill" + (taskMode === "scheduled" ? " active" : "")}
@@ -152,52 +155,36 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
             <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" />
             <line x1="3" y1="10" x2="21" y2="10" />
           </svg>
-          <span>Scheduled</span>
+          <span>{t(lang, "scheduled")}</span>
         </button>
       </div>
 
-      {/* Scheduled reminder options — collapsible */}
+      {/* Scheduled options — segmented control + inline pickers */}
       <div id="reminder-collapse" className={taskMode === "scheduled" ? "open" : ""}>
         <div id="reminder-inner">
-            <button
-              id="reminder-summary"
-              className={expanded ? "options-open" : ""}
-              onClick={() => setExpanded(!expanded)}
-              aria-label="Toggle reminder options"
-            >
-            <span id="reminder-summary-icon">{summaryIcon}</span>
-            <span id="reminder-summary-text">{summaryLabel}</span>
-            <svg
-              id="reminder-chevron"
-              width="12" height="12"
-              viewBox="0 0 24 24"
-              fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-
-          <div id="reminder-options" className={expanded ? "open" : ""}>
-            <div id="reminder-type">
-              <label className="radio-label">
-                <input type="radio" name="rtype" value="once" checked={rtype === "once"} onChange={() => setRtype("once")} />
-                <span className="radio-dot" />
-                <span>{t(lang, "oneTime")}</span>
-              </label>
-              <label className="radio-label">
-                <input type="radio" name="rtype" value="weekly" checked={rtype === "weekly"} onChange={() => setRtype("weekly")} />
-                <span className="radio-dot" />
-                <span>{t(lang, "weekly")}</span>
-              </label>
+          <div id="scheduled-row">
+            <div className="segmented">
+              <button
+                className={"seg-btn" + (rtype === "once" ? " active" : "")}
+                onClick={() => setRtype("once")}
+              >
+                {t(lang, "oneTime")}
+              </button>
+              <button
+                className={"seg-btn" + (rtype === "weekly" ? " active" : "")}
+                onClick={() => setRtype("weekly")}
+              >
+                {t(lang, "weekly")}
+              </button>
             </div>
             {rtype === "once" ? (
-              <div id="once-options">
+              <div className="picker-line">
                 <DatePicker value={onceDate} onChange={setOnceDate} lang={lang} />
+                <span className="picker-sep">–</span>
                 <TimePicker value={onceTime} onChange={setOnceTime} />
               </div>
             ) : (
-              <div id="weekly-options">
+              <div className="picker-line">
                 <div id="day-picker">
                   {(() => {
                     const labels = dayLabels(lang);

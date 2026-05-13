@@ -100,12 +100,12 @@ export default function App() {
     async (content, rtype, rdata) => {
       try {
         if (editingId !== null) {
-          const t = tasks.find((x) => x.id === editingId);
-          if (t) {
-            t.content = content;
-            t.reminder_type = rtype;
-            t.reminder_data = rdata;
-            await invoke("update_task", { task: t });
+          const task = tasks.find((x) => x.id === editingId);
+          if (task) {
+            task.content = content;
+            task.reminder_type = rtype;
+            task.reminder_data = rdata;
+            await invoke("update_task", { task });
           }
           setEditingId(null);
           showToast(t(lang, "taskUpdated"));
@@ -127,20 +127,18 @@ export default function App() {
 
   const deleteTask = useCallback(
     async (id, content, taskData) => {
-      // Delete from backend immediately (no more 5s delay — undo re-adds)
-      try {
-        await invoke("delete_task", { id });
-      } catch (_) {}
       setDeletingId(id);
-      // After fly-left animation, show undo bar
+      // Wait for fly-left animation, then actually remove
       setTimeout(() => {
         setTasks((prev) => prev.filter((t) => t.id !== id));
         setDeletingId(null);
         setUndoId(id);
         setUndoContent(content.length > 30 ? content.slice(0, 30) + "..." : content);
         setUndoTask(taskData);
-        // Auto-dismiss undo bar after 5s
-        const timer = setTimeout(() => {
+        const timer = setTimeout(async () => {
+          try {
+            await invoke("delete_task", { id });
+          } catch (_) {}
           setUndoId(null);
           setUndoTask(null);
         }, 5000);
@@ -247,7 +245,6 @@ export default function App() {
         onOpenSettings={() => setShowSettings(true)}
         showSearch={showSearch}
         onToggleSearch={() => setShowSearch((s) => !s)}
-        lang={lang}
       />
       <DateBar
         dateStr={dateStr}
