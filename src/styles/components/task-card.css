@@ -64,20 +64,20 @@
 }
 .action-btn:hover { background: var(--bg-glass-hover); color: var(--text-primary); transform: translateY(-1px) }
 .action-btn:active { transform: scale(0.85) translateY(0) }
-.delete-btn:hover { background: var(--danger-dim); color: var(--danger); transform: translateY(-1px) !important }
-.edit-btn:hover { background: var(--accent-dim); color: var(--accent); transform: translateY(-1px) !important }
+.delete-btn:hover { background: var(--danger-dim); color: var(--danger); transform: translateY(-1px) }
+.edit-btn:hover { background: var(--accent-dim); color: var(--accent); transform: translateY(-1px) }
 
 /* ── Pin button ── */
 .pin-btn { color: var(--text-tertiary) }
 .pin-btn.active { color: var(--accent) }
-.pin-btn:hover { background: var(--accent-dim); color: var(--accent); transform: translateY(-1px) !important }
-.pin-btn:active { transform: scale(0.85) translateY(0) !important }
+.pin-btn:hover { background: var(--accent-dim); color: var(--accent); transform: translateY(-1px) }
+.pin-btn:active { transform: scale(0.85) translateY(0) }
 
 /* ── Persist button (daily repeat) ── */
 .persist-btn { color: var(--text-tertiary) }
 .persist-btn.active { color: var(--accent) }
-.persist-btn:hover { background: var(--accent-dim); color: var(--accent); transform: translateY(-1px) !important }
-.persist-btn:active { transform: scale(0.85) translateY(0) !important }
+.persist-btn:hover { background: var(--accent-dim); color: var(--accent); transform: translateY(-1px) }
+.persist-btn:active { transform: scale(0.85) translateY(0) }
 
 /* ── Reorder buttons ── */
 .drag-wrapper { position: relative }
@@ -94,8 +94,9 @@
   transition: opacity var(--transition-fast), color var(--transition-fast);
 }
 .task-card:hover .reorder-btn { opacity: 0.6 }
-.reorder-btn:hover { opacity: 1 !important; color: var(--text-secondary) }
+.task-card:hover .reorder-btn:hover { opacity: 1; color: var(--text-secondary) }
 .reorder-btn:active { transform: scale(0.85) }
-.reorder-btn.disabled { opacity: 0.08 !important; cursor: default }
-.reorder-btn.disabled:hover { opacity: 0.08 !important }
+.reorder-btn.disabled { opacity: 0.08; cursor: default }
+.reorder-btn.disabled:hover { opacity: 0.08 }
+.task-card:hover .reorder-btn.disabled { opacity: 0.08 }
 .reorder-btn.up svg, .reorder-btn.down svg { display: block }
