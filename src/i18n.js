@@ -41,6 +41,7 @@ const i18n = {
     theme: "Theme",
     dark: "Dark",
     light: "Light",
+    todayToDo: "Today to-do",
   },
   zh: {
     appName: "玻璃待办",
@@ -84,6 +85,7 @@ const i18n = {
     theme: "主题",
     dark: "暗色",
     light: "亮色",
+    todayToDo: "今日待完成",
   },
 };
 

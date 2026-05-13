@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 /**
  * TimePicker — Custom time picker replacing <input type="time">
@@ -16,6 +16,15 @@ export default function TimePicker({ value, onChange }) {
 
   const [editHour, setEditHour] = useState(initHour);
   const [editMin, setEditMin] = useState(initMin);
+
+  // Wheel handler: scroll up (deltaY<0) increments, scroll down decrements
+  const handleWheel = useCallback((setter, maxVal) => (e) => {
+    e.preventDefault();
+    setter((v) => {
+      if (e.deltaY < 0) return (v + 1) % maxVal;
+      return (v - 1 + maxVal) % maxVal;
+    });
+  }, []);
 
   // Sync edit state when value changes externally
   useEffect(() => {
@@ -96,7 +105,11 @@ export default function TimePicker({ value, onChange }) {
                   <polyline points="18 15 12 9 6 15" />
                 </svg>
               </button>
-              <span className="timepicker-value" onClick={handleSelect}>{hStr}</span>
+              <span
+                className="timepicker-value"
+                onClick={handleSelect}
+                onWheel={handleWheel(setEditHour, 24)}
+              >{hStr}</span>
               <button
                 type="button"
                 className="timepicker-arrow"
@@ -123,7 +136,11 @@ export default function TimePicker({ value, onChange }) {
                   <polyline points="18 15 12 9 6 15" />
                 </svg>
               </button>
-              <span className="timepicker-value" onClick={handleSelect}>{mStr}</span>
+              <span
+                className="timepicker-value"
+                onClick={handleSelect}
+                onWheel={handleWheel(setEditMin, 60)}
+              >{mStr}</span>
               <button
                 type="button"
                 className="timepicker-arrow"

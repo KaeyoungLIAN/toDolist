@@ -51,7 +51,9 @@ export default function TaskCard({ task, index, onToggle, onDelete, onEdit, onPi
             <span className="reminder-badge once">{t(lang, "done")}</span>
           ) : task.reminder_type === "once" && task.reminder_data.datetime ? (
             <span className="reminder-badge once">
-              {task.reminder_data.datetime.replace("T", " ")}
+              {task.reminder_data.datetime.endsWith("T23:59:00")
+                ? t(lang, "todayToDo")
+                : task.reminder_data.datetime.replace("T", " ").slice(0, -3)}
             </span>
           ) : task.reminder_type === "weekly" ? (
             <span className="reminder-badge weekly">
