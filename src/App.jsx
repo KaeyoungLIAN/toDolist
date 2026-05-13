@@ -59,6 +59,9 @@ export default function App() {
   useEffect(() => { loadTasks(); const iv = setInterval(() => invoke("check_and_notify").catch((e) => console.error("check_and_notify interval:", e)), 60000); return () => clearInterval(iv); }, [loadTasks]);
   useEffect(() => { const cb = () => { if (!document.hidden) loadTasks(); }; document.addEventListener("visibilitychange", cb); return () => document.removeEventListener("visibilitychange", cb); }, [loadTasks]);
 
+  // Sync html lang attribute with current language
+  useEffect(() => { document.documentElement.lang = lang === "zh" ? "zh-CN" : "en"; }, [lang]);
+
   // ── filtering ──
   const dateStr = fmt(currentDate);
   const today = new Date();
