@@ -7,7 +7,7 @@ import BottomPanel from "./components/BottomPanel";
 import SettingsModal from "./components/SettingsModal";
 import { t } from "./i18n";
 
-const WN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WN = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 function fmt(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -128,37 +128,42 @@ export default function App() {
 
   const deleteTask = useCallback(
     async (id, content, taskData) => {
-      // Clear any pending undo timer from a previous delete
       if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
       setDeletingId(id);
-      // Wait for fly-left animation, then show undo bar
+
+      // Delete from BACKEND first — eliminates race with reorder
+      try {
+        await invoke("delete_task", { id });
+      } catch (e) {
+        console.error("delete_task:", e);
+        setDeletingId(null);
+        showToast(t(lang, "error"));
+        return;
+      }
+
+      // Backend done — now animate frontend
       setTimeout(() => {
         setTasks((prev) => prev.filter((t) => t.id !== id));
         setDeletingId(null);
         setUndoId(id);
         setUndoContent(content.length > 30 ? content.slice(0, 30) + "..." : content);
         setUndoTask(taskData);
-        undoTimerRef.current = setTimeout(async () => {
-          try {
-            await invoke("delete_task", { id });
-          } catch (e) { console.error("delete_task:", e); }
+
+        // 5s undo window — re-add to backend if user clicks Undo
+        undoTimerRef.current = setTimeout(() => {
           setUndoId(null);
           setUndoTask(null);
           undoTimerRef.current = null;
         }, 5000);
       }, 380);
     },
-    []
+    [showToast, lang]
   );
 
   const cancelDelete = useCallback(async () => {
     if (undoTimerRef.current) {
       clearTimeout(undoTimerRef.current);
       undoTimerRef.current = null;
-    }
-    if (deletingId) {
-      // Re-add the task that was removed from UI but not yet from backend
-      setDeletingId(null);
     }
     if (undoTask) {
       try {
@@ -167,13 +172,13 @@ export default function App() {
           reminderType: undoTask.reminder_type,
           reminderData: undoTask.reminder_data,
         });
+        showToast(t(lang, "deleteCancelled"));
       } catch (e) { console.error("add_task (undo):", e); }
     }
     setUndoId(null);
     setUndoTask(null);
-    showToast(t(lang, "deleteCancelled"));
     await loadTasks();
-  }, [undoTask, showToast, loadTasks, lang, deletingId]);
+  }, [undoTask, showToast, loadTasks, lang]);
 
   const toggleComplete = useCallback(
     async (id) => {
@@ -265,10 +270,11 @@ export default function App() {
         onOpenSettings={() => setShowSettings(true)}
         showSearch={showSearch}
         onToggleSearch={() => setShowSearch((s) => !s)}
+        lang={lang}
       />
       <DateBar
         dateStr={dateStr}
-        weekday={WN[currentDate.getDay()]}
+        weekday={t(lang, WN[currentDate.getDay()])}
         onPrev={goPrev}
         onNext={goNext}
         onToday={goToday}
