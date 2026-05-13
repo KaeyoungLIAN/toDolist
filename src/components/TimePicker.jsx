@@ -7,6 +7,7 @@ import React, { useState, useRef, useEffect } from "react";
 export default function TimePicker({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
+  const prevOpenRef = useRef(false);
 
   // Parse current value
   const parts = value ? value.split(":") : [];
@@ -41,6 +42,16 @@ export default function TimePicker({ value, onChange }) {
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
   }, [open]);
+
+  // Auto-commit edit state when popup closes
+  useEffect(() => {
+    if (prevOpenRef.current && !open) {
+      const h = String(editHour).padStart(2, "0");
+      const m = String(editMin).padStart(2, "0");
+      onChange(`${h}:${m}`);
+    }
+    prevOpenRef.current = open;
+  }, [open, editHour, editMin, onChange]);
 
   const wrapInc = (val, max) => (val + 1) % max;
   const wrapDec = (val, max) => (val - 1 + max) % max;
