@@ -43,14 +43,14 @@
 #settings-btn:hover svg { animation: gear-wiggle 400ms cubic-bezier(0.16, 1, 0.3, 1) }
 
 /* ── Help button ── */
-.help-btn { pointer-events: auto; font-size: 13px; font-weight: 600; width: 22px; height: 22px; border-radius: 50%; color: var(--text-tertiary) }
+.help-btn { pointer-events: auto; font-size: 13px; font-weight: 600; width: 22px; height: 22px; border-radius: 50%; color: var(--text-tertiary); background: var(--bg-input) }
 .help-btn:hover { background: var(--bg-glass-hover); color: var(--accent) }
 
 /* ── Help popover (fixed to break out of stacking context) ── */
 .help-popover {
   position: fixed; top: 36px; left: 12px; z-index: 1000;
-  background: rgba(18, 18, 24, 0.92);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  background: rgba(18, 18, 24, 0.76);
+  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
   padding: 10px 12px;
@@ -83,7 +83,7 @@
   border-radius: 3px; transition: background var(--transition-fast);
 }
 .help-item:hover { background: var(--bg-glass-hover); color: var(--text-primary) }
-.help-icon { flex-shrink: 0; opacity: 0.6 }
+.help-icon { flex-shrink: 0; opacity: 0.75 }
 .help-item:hover .help-icon { opacity: 1 }
 .help-popover-footer {
   margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-glass);
