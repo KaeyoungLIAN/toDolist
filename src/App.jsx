@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import TitleBar from "./components/TitleBar";
 import DateBar from "./components/DateBar";
 import TaskList from "./components/TaskList";
 import BottomPanel from "./components/BottomPanel";
 import SettingsModal from "./components/SettingsModal";
-import { t, weekdayNames } from "./i18n";
+import { t } from "./i18n";
 
 const WN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -31,6 +31,7 @@ export default function App() {
   const [completingId, setCompletingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const undoTimerRef = useRef(null);
 
   const showToast = useCallback((msg) => {
     setToast(msg);
@@ -39,10 +40,10 @@ export default function App() {
 
   const loadTasks = useCallback(async () => {
     try {
-      const t = await invoke("get_tasks");
-      setTasks(t);
-      await invoke("check_and_notify").catch(() => {});
-    } catch (_) {}
+      const data = await invoke("get_tasks");
+      setTasks(data);
+      await invoke("check_and_notify").catch((e) => console.error("check_and_notify:", e));
+    } catch (e) { console.error("loadTasks:", e); }
   }, []);
 
   // Load settings on mount
@@ -52,10 +53,10 @@ export default function App() {
         if (s.language) setLang(s.language);
         if (s.show_completed !== undefined) setShowCompleted(s.show_completed);
       })
-      .catch(() => {});
+      .catch((e) => console.error("get_settings:", e));
   }, []);
 
-  useEffect(() => { loadTasks(); const iv = setInterval(() => invoke("check_and_notify").catch(() => {}), 60000); return () => clearInterval(iv); }, [loadTasks]);
+  useEffect(() => { loadTasks(); const iv = setInterval(() => invoke("check_and_notify").catch((e) => console.error("check_and_notify interval:", e)), 60000); return () => clearInterval(iv); }, [loadTasks]);
   useEffect(() => { const cb = () => { if (!document.hidden) loadTasks(); }; document.addEventListener("visibilitychange", cb); return () => document.removeEventListener("visibilitychange", cb); }, [loadTasks]);
 
   // ── filtering ──
@@ -127,30 +128,36 @@ export default function App() {
 
   const deleteTask = useCallback(
     async (id, content, taskData) => {
+      // Clear any pending undo timer from a previous delete
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
       setDeletingId(id);
-      // Wait for fly-left animation, then actually remove
+      // Wait for fly-left animation, then show undo bar
       setTimeout(() => {
         setTasks((prev) => prev.filter((t) => t.id !== id));
         setDeletingId(null);
         setUndoId(id);
         setUndoContent(content.length > 30 ? content.slice(0, 30) + "..." : content);
         setUndoTask(taskData);
-        const timer = setTimeout(async () => {
+        undoTimerRef.current = setTimeout(async () => {
           try {
             await invoke("delete_task", { id });
-          } catch (_) {}
+          } catch (e) { console.error("delete_task:", e); }
           setUndoId(null);
           setUndoTask(null);
+          undoTimerRef.current = null;
         }, 5000);
-        window.__undoTimer = timer;
       }, 380);
     },
     []
   );
 
   const cancelDelete = useCallback(async () => {
-    clearTimeout(window.__undoTimer);
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = null;
+    }
     if (deletingId) {
+      // Re-add the task that was removed from UI but not yet from backend
       setDeletingId(null);
     }
     if (undoTask) {
@@ -160,7 +167,7 @@ export default function App() {
           reminderType: undoTask.reminder_type,
           reminderData: undoTask.reminder_data,
         });
-      } catch (_) {}
+      } catch (e) { console.error("add_task (undo):", e); }
     }
     setUndoId(null);
     setUndoTask(null);
@@ -181,7 +188,7 @@ export default function App() {
         } else {
           await loadTasks();
         }
-      } catch (_) {}
+      } catch (e) { console.error("toggle_complete:", e); }
     },
     [loadTasks, showCompleted]
   );
@@ -205,7 +212,20 @@ export default function App() {
           await invoke("update_task", { task: { ...t, pinned: !t.pinned } });
           await loadTasks();
         }
-      } catch (_) {}
+      } catch (e) { console.error("toggle_pin:", e); }
+    },
+    [tasks, loadTasks]
+  );
+
+  const togglePersist = useCallback(
+    async (id) => {
+      try {
+        const task = tasks.find((x) => x.id === id);
+        if (task) {
+          await invoke("update_task", { task: { ...task, persist: !task.persist } });
+          await loadTasks();
+        }
+      } catch (e) { console.error("toggle_persist:", e); }
     },
     [tasks, loadTasks]
   );
@@ -215,7 +235,7 @@ export default function App() {
       try {
         await invoke("reorder_tasks", { ids });
         await loadTasks();
-      } catch (_) {}
+      } catch (e) { console.error("reorder_tasks:", e); }
     },
     [loadTasks]
   );
@@ -291,6 +311,7 @@ export default function App() {
         onEdit={startEdit}
         onPin={togglePin}
         onReorder={handleReorder}
+        onTogglePersist={togglePersist}
         undoId={undoId}
         undoContent={undoContent}
         onUndo={cancelDelete}
