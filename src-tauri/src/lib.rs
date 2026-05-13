@@ -4,7 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::Mutex;
 use tauri::{
-    AppHandle, Manager, State, WindowEvent,
+    AppHandle, Manager, State,
     window::{Effect, EffectsBuilder},
 };
 
@@ -313,10 +313,6 @@ pub fn run() {
             app.manage(AppState { data: Mutex::new(data.tasks.clone()) });
 
             if let Some(w) = app.get_webview_window("main") {
-                let w2 = w.clone();
-                w.clone().on_window_event(move |event| {
-                    if let WindowEvent::CloseRequested { .. } = event { w2.minimize().ok(); }
-                });
 
                 #[cfg(target_os = "windows")]
                 w.set_effects(EffectsBuilder::new()
