@@ -110,6 +110,12 @@ export default function TitleBar({ onOpenSettings, showSearch, onToggleSearch, l
               </svg>
               <span>{lang === "zh" ? "储留任务" : "Keep as template"}</span>
             </div>
+            <div className="help-item">
+              <svg className="help-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 10l5-5 5 5" /><path d="M7 14l5 5 5-5" />
+              </svg>
+              <span>{lang === "zh" ? "点上下箭头排序" : "Reorder by arrows"}</span>
+            </div>
           </div>
           <div className="help-popover-footer">
             {lang === "zh" ? "点击外部或按 Esc 键关闭" : "Click outside or press Esc to close"}
