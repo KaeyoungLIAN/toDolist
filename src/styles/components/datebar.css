@@ -12,6 +12,8 @@
 
 #datebar-right { display: flex; align-items: center; gap: 8px }
 
+.datebar-stats { margin-left: auto; margin-right: 8px }
+
 #date-nav { display: flex; align-items: center; gap: 4px }
 
 .nav-btn {
