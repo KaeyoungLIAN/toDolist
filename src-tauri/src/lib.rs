@@ -41,6 +41,8 @@ pub struct Settings {
     pub show_completed: bool,
     #[serde(default = "default_theme")]
     pub theme: String,
+    #[serde(default = "default_true")]
+    pub show_welcome: bool,
 }
 
 fn default_true() -> bool { true }
@@ -53,6 +55,7 @@ impl Default for Settings {
             data_dir: None,
             show_completed: true,
             theme: "dark".to_string(),
+            show_welcome: true,
         }
     }
 }

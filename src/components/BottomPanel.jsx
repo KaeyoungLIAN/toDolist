@@ -9,7 +9,7 @@ function fmt(d) {
 
 const DAY_KEYS = [1, 2, 3, 4, 5, 6, 0];
 
-export default function BottomPanel({ editingId, editText, editRtype, editRdata, onSave, onCancelEdit, dateStr, lang }) {
+export default function BottomPanel({ editingId, editText, editRtype, editRdata, onSave, onCancelEdit, dateStr, lang, onEmptySubmit }) {
   const [content, setContent] = useState("");
   const [taskMode, setTaskMode] = useState("normal"); // "normal" | "scheduled"
   const [rtype, setRtype] = useState("once");
@@ -52,7 +52,10 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
 
   const handleSubmit = () => {
     const text = content.trim();
-    if (!text) return;
+    if (!text) {
+      if (onEmptySubmit) onEmptySubmit();
+      return;
+    }
 
     if (editingId === null && taskMode === "normal") {
       // Normal task: no reminder, due today
@@ -113,7 +116,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
           </svg>
-          <span>{editingId ? t(lang, "update") : t(lang, "add")}</span>
+          <span>{editingId ? t(lang, "updateTask") : t(lang, "addTask")}</span>
         </button>
       </div>
 

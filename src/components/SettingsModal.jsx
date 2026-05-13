@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { t, availableLangs } from "../i18n";
 
-export default function SettingsModal({ lang, theme, showCompleted, onClose, onSettingsChange }) {
-  const [settings, setSettings] = useState({ language: lang, theme: "dark", data_dir: null, show_completed: true });
+export default function SettingsModal({ lang, theme, showCompleted, showWelcome, onClose, onSettingsChange }) {
+  const [settings, setSettings] = useState({ language: lang, theme: "dark", data_dir: null, show_completed: true, show_welcome: true });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function SettingsModal({ lang, theme, showCompleted, onClose, onS
   const update = async (updated) => {
     setSettings(updated);
     await invoke("update_settings", { settings: updated }).catch(console.error);
-    onSettingsChange(updated.language, updated.data_dir, updated.show_completed, updated.theme);
+    onSettingsChange(updated.language, updated.data_dir, updated.show_completed, updated.theme, updated.show_welcome);
   };
 
   const handleLangChange = (code) => {
@@ -92,6 +92,17 @@ export default function SettingsModal({ lang, theme, showCompleted, onClose, onS
                 <div className="toggle-thumb" />
               </div>
               <span className="toggle-label">{settings.show_completed ? t(settings.language, "yes") : t(settings.language, "no")}</span>
+            </label>
+          </div>
+
+          {/* Show welcome guide */}
+          <div className="settings-field">
+            <label className="settings-label">{t(settings.language, "showWelcome")}</label>
+            <label className="toggle-row" onClick={() => update({ ...settings, show_welcome: !settings.show_welcome })}>
+              <div className={`toggle-track${settings.show_welcome ? " on" : ""}`}>
+                <div className="toggle-thumb" />
+              </div>
+              <span className="toggle-label">{settings.show_welcome ? t(settings.language, "yes") : t(settings.language, "no")}</span>
             </label>
           </div>
 

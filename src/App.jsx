@@ -5,6 +5,7 @@ import DateBar from "./components/DateBar";
 import TaskList from "./components/TaskList";
 import BottomPanel from "./components/BottomPanel";
 import SettingsModal from "./components/SettingsModal";
+import WelcomeModal from "./components/WelcomeModal";
 import { t } from "./i18n";
 
 const WN = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -32,6 +33,8 @@ export default function App() {
   const [completingId, setCompletingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const undoTimerRef = useRef(null);
 
   const showToast = useCallback((msg) => {
@@ -54,6 +57,12 @@ export default function App() {
         if (s.language) setLang(s.language);
         if (s.show_completed !== undefined) setShowCompleted(s.show_completed);
         if (s.theme) setTheme(s.theme);
+        if (s.show_welcome !== false) setShowWelcome(true);
+        else setShowWelcome(false);
+        // Show welcome modal on first launch
+        if (s.show_welcome !== false) {
+          setShowWelcomeModal(true);
+        }
       })
       .catch((e) => console.error("get_settings:", e));
   }, []);
@@ -268,11 +277,17 @@ export default function App() {
     loadTasks();
   }, [loadTasks]);
 
-  const handleSettingsChange = useCallback((newLang, _dataDir, showComp, newTheme) => {
+  const handleSettingsChange = useCallback((newLang, _dataDir, showComp, newTheme, showWelcomeVal) => {
     setLang(newLang);
     if (showComp !== undefined) setShowCompleted(showComp);
     if (newTheme) setTheme(newTheme);
+    if (showWelcomeVal !== undefined) setShowWelcome(showWelcomeVal);
   }, []);
+
+  const handleEmptySubmit = useCallback(() => {
+    setToast(t(lang, "emptyInput"));
+    setTimeout(() => setToast(null), 2500);
+  }, [lang]);
 
   return (
     <>
@@ -340,6 +355,7 @@ export default function App() {
         onCancelEdit={cancelEdit}
         dateStr={dateStr}
         lang={lang}
+        onEmptySubmit={handleEmptySubmit}
       />
       {toast && <div className="toast">{toast}</div>}
       {showSettings && (
@@ -347,8 +363,24 @@ export default function App() {
           lang={lang}
           theme={theme}
           showCompleted={showCompleted}
+          showWelcome={showWelcome}
           onClose={() => setShowSettings(false)}
           onSettingsChange={handleSettingsChange}
+        />
+      )}
+      {showWelcomeModal && (
+        <WelcomeModal
+          lang={lang}
+          onClose={() => setShowWelcomeModal(false)}
+          showWelcome={showWelcome}
+          onToggleWelcome={() => {
+            const newVal = !showWelcome;
+            setShowWelcome(newVal);
+            // Persist the setting
+            invoke("get_settings").then((s) => {
+              invoke("update_settings", { settings: { ...s, show_welcome: newVal } });
+            }).catch(console.error);
+          }}
         />
       )}
     </>
