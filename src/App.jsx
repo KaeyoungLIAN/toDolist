@@ -313,13 +313,6 @@ export default function App() {
           )}
         </div>
       )}
-      {(yesterdayCompleted > 0 || weekCompleted > 0) && !showSearch && (
-        <div className="stats-line">
-          {yesterdayCompleted > 0 && <span>{t(lang, "yesterday")} {yesterdayCompleted}</span>}
-          {yesterdayCompleted > 0 && weekCompleted > 0 && <span className="stats-dot">·</span>}
-          {weekCompleted > 0 && <span>{t(lang, "thisWeek")} {weekCompleted}</span>}
-        </div>
-      )}
       <TaskList
         tasks={filtered}
         onToggle={toggleComplete}
