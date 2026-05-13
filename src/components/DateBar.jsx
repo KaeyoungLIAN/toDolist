@@ -115,14 +115,14 @@ export default function DateBar({ dateStr, weekday, onPrev, onNext, onToday, onR
           <button id="today-btn" onClick={onToday}>{t(lang, "today")}</button>
         )}
       </div>
-      {(yesterdayCompleted > 0 || weekCompleted > 0) && (
-        <span className="datebar-stats">
-          {yesterdayCompleted > 0 && <span>{t(lang, "yesterday")} {yesterdayCompleted}</span>}
-          {yesterdayCompleted > 0 && weekCompleted > 0 && <span className="stats-dot">·</span>}
-          {weekCompleted > 0 && <span>{t(lang, "thisWeek")} {weekCompleted}</span>}
-        </span>
-      )}
       <div id="datebar-right">
+        {(yesterdayCompleted > 0 || weekCompleted > 0) && (
+          <span className="datebar-stats">
+            {yesterdayCompleted > 0 && <span>{t(lang, "yesterday")} {yesterdayCompleted}</span>}
+            {yesterdayCompleted > 0 && weekCompleted > 0 && <span className="stats-dot">·</span>}
+            {weekCompleted > 0 && <span>{t(lang, "thisWeek")} {weekCompleted}</span>}
+          </span>
+        )}
         <button id="refresh-btn" onClick={onRefresh}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
