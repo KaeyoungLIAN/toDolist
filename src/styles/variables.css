@@ -33,7 +33,7 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box }
 
-html { background: transparent; border-radius: 16px; overflow: hidden; border: 1px solid var(--border-glass) }
+html { background: transparent }
 
 body {
   font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -44,10 +44,9 @@ body {
   flex-direction: column;
   user-select: none;
   letter-spacing: -0.01em;
-  border-radius: 16px;
   overflow: hidden;
   /* Fix Windows transparent window drag drift */
   border: 1px solid transparent;
 }
 
-#root { display: flex; flex-direction: column; flex: 1; min-height: 0; border-radius: inherit; overflow: hidden }
+#root { display: flex; flex-direction: column; flex: 1; min-height: 0 }
