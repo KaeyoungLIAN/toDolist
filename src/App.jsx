@@ -406,7 +406,7 @@ export default function App() {
         lang={lang}
         deletingId={deletingId}
         completingId={completingId}
-      />
+      />)}
       <BottomPanel
         editingId={editingId}
         editText={editText}
