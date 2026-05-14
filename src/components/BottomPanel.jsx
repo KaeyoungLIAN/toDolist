@@ -212,48 +212,50 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
               </div>
             )}
           </div>
-          {/* Link type + input */}
-          <div className="segmented" style={{ marginTop: 8 }}>
-            <button
-              className={"seg-btn" + (linkType === "url" ? " active" : "")}
-              onClick={() => setLinkType("url")}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 3 }}>
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-              </svg>
-              Web
-            </button>
-            <button
-              className={"seg-btn" + (linkType === "meeting" ? " active" : "")}
-              onClick={() => setLinkType("meeting")}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 3 }}>
-                <polygon points="23 7 16 12 23 17 23 7" />
-                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-              </svg>
-              腾讯会议
-            </button>
+          {/* Link type segmented + inline input (same pattern as date-time pickers) */}
+          <div className="picker-line" style={{ marginTop: 8 }}>
+            <div className="segmented">
+              <button
+                className={"seg-btn" + (linkType === "url" ? " active" : "")}
+                onClick={() => setLinkType("url")}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+                Web
+              </button>
+              <button
+                className={"seg-btn" + (linkType === "meeting" ? " active" : "")}
+                onClick={() => setLinkType("meeting")}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="23 7 16 12 23 17 23 7" />
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                </svg>
+                腾讯会议
+              </button>
+            </div>
+            {linkType === "url" ? (
+              <input
+                type="url"
+                className="link-url-input"
+                placeholder={t(lang, "linkPlaceholder")}
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                autoComplete="off"
+              />
+            ) : (
+              <input
+                type="text"
+                className="link-url-input"
+                placeholder={t(lang, "meetingCode")}
+                value={meetingCode}
+                onChange={(e) => setMeetingCode(e.target.value.replace(/[^a-zA-Z0-9-]/g, ""))}
+                autoComplete="off"
+              />
+            )}
           </div>
-          {linkType === "url" ? (
-            <input
-              type="url"
-              className="link-url-input"
-              placeholder={t(lang, "linkPlaceholder")}
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              autoComplete="off"
-            />
-          ) : (
-            <input
-              type="text"
-              className="link-url-input"
-              placeholder={t(lang, "meetingCode")}
-              value={meetingCode}
-              onChange={(e) => setMeetingCode(e.target.value.replace(/[^a-zA-Z0-9-]/g, ""))}
-              autoComplete="off"
-            />
-          )}
         </div>
       </div>
     </div>

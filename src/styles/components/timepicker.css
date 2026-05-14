@@ -51,7 +51,7 @@
 
 /* ── Link URL input in bottom panel ── */
 .link-url-input {
-  display: block; width: 100%; margin-top: 8px;
+  flex: 1; min-width: 0;
   padding: 6px 10px; box-sizing: border-box;
   background: var(--bg-input); border: 1px solid var(--border-glass);
   border-radius: 4px; color: var(--text-primary); font-size: 12px;
