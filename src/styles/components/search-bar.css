@@ -38,17 +38,22 @@
 .search-overlay-input {
   flex: 0 1 400px;
   background: transparent; border: none; outline: none;
+  border-bottom: 1px solid var(--text-muted);
   color: var(--text-primary);
   font-size: 28px; font-weight: 500;
   font-family: inherit;
   letter-spacing: -0.02em;
   text-align: center;
-  transition: font-size 250ms var(--ease-spring), flex 250ms var(--ease-spring), text-align 250ms var(--ease-spring);
+  transition: font-size 250ms var(--ease-spring), flex 250ms var(--ease-spring), text-align 250ms var(--ease-spring), border-color 250ms var(--ease-spring);
 }
 
 .search-overlay-header.has-query .search-overlay-input {
   flex: 1; font-size: 14px; font-weight: 400;
   text-align: left;
+}
+
+.search-overlay-input:focus {
+  border-bottom-color: var(--text-primary);
 }
 
 .search-overlay-input::placeholder { color: var(--text-muted); opacity: 0.7 }

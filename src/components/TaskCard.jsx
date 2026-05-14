@@ -4,10 +4,19 @@ import { t } from "../i18n";
 
 const WN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function formatDateToDo(dateStr, lang) {
+  const [y, m, d] = dateStr.split("-");
+  if (lang === "zh") return `${parseInt(m,10)}月${parseInt(d,10)}日待完成`;
+  return `${MONTH_NAMES[parseInt(m,10)-1]} ${parseInt(d,10)} To Do`;
+}
+
 export default function TaskCard({ task, index, onToggle, onDelete, onEdit, onPin, lang, deletingId, completingId, isFirst, isLast, onMoveUp, onMoveDown, onTogglePersist, dateStr }) {
   const isDeleting = task.id === deletingId;
   const isCompleting = task.id === completingId;
   const completed = task.completed || (task.completed_dates?.includes(dateStr));
+  const todayStr = new Date().toISOString().slice(0, 10);
   return (
     <div
       className={"task-card" + (completed ? " completed" : "") + (isDeleting ? " deleting" : "") + (isCompleting ? " completing" : "")}
@@ -53,9 +62,9 @@ export default function TaskCard({ task, index, onToggle, onDelete, onEdit, onPi
             <span className="reminder-badge once">{t(lang, "done")}</span>
           ) : task.reminder_type === "once" && task.reminder_data.datetime ? (
             <span className="reminder-badge once">
-              {task.reminder_data.datetime.endsWith("T23:59:00")
-                ? t(lang, "todayToDo")
-                : task.reminder_data.datetime.replace("T", " ").slice(0, -3)}
+            {task.reminder_data.datetime.endsWith("T23:59:00")
+              ? (dateStr === todayStr ? t(lang, "todayToDo") : formatDateToDo(dateStr, lang))
+              : task.reminder_data.datetime.replace("T", " ").slice(0, -3)}
             </span>
           ) : task.reminder_type === "weekly" ? (
             <span className="reminder-badge weekly">
