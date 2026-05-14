@@ -3,12 +3,13 @@ import { t } from "../i18n";
 
 const WN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default function TaskCard({ task, index, onToggle, onDelete, onEdit, onPin, lang, deletingId, completingId, isFirst, isLast, onMoveUp, onMoveDown, onTogglePersist }) {
+export default function TaskCard({ task, index, onToggle, onDelete, onEdit, onPin, lang, deletingId, completingId, isFirst, isLast, onMoveUp, onMoveDown, onTogglePersist, dateStr }) {
   const isDeleting = task.id === deletingId;
   const isCompleting = task.id === completingId;
+  const completed = task.completed || (task.completed_dates?.includes(dateStr));
   return (
     <div
-      className={"task-card" + (task.completed ? " completed" : "") + (isDeleting ? " deleting" : "") + (isCompleting ? " completing" : "")}
+      className={"task-card" + (completed ? " completed" : "") + (isDeleting ? " deleting" : "") + (isCompleting ? " completing" : "")}
       style={{ animationDelay: `${index * 40}ms` }}
     >
       <div className="reorder-btns">
@@ -38,7 +39,7 @@ export default function TaskCard({ task, index, onToggle, onDelete, onEdit, onPi
       <input
         type="checkbox"
         className="task-checkbox"
-        checked={task.completed}
+        checked={completed}
         onChange={() => onToggle(task.id)}
       />
       <div className="task-body">
@@ -47,7 +48,7 @@ export default function TaskCard({ task, index, onToggle, onDelete, onEdit, onPi
           {task.pinned && (
             <span className="reminder-badge pinned">{t(lang, "pinned")}</span>
           )}
-          {task.completed ? (
+          {completed ? (
             <span className="reminder-badge once">{t(lang, "done")}</span>
           ) : task.reminder_type === "once" && task.reminder_data.datetime ? (
             <span className="reminder-badge once">

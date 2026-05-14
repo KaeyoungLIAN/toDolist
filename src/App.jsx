@@ -93,15 +93,23 @@ export default function App() {
     return t.created_at.slice(0, 10);
   };
 
-  const yesterdayCompleted = tasks.filter((t) => t.completed && taskDate(t) === yesterdayStr).length;
-  const weekCompleted = tasks.filter((t) => t.completed && taskDate(t) >= weekStartStr && taskDate(t) <= dateStr).length;
+  // Helper: is a task completed on a given date (supports completed_dates for weekly)
+  const isTaskCompletedOn = (t, d) => t.completed || t.completed_dates?.includes(d);
+
+  const yesterdayCompleted = tasks.filter((t) => isTaskCompletedOn(t, yesterdayStr)).length;
+  const weekCompleted = tasks.filter((t) => {
+    // Weekly: check completed_dates entries within week range
+    if (t.completed_dates?.some((d) => d >= weekStartStr && d <= dateStr)) return true;
+    // Non-weekly: completed flag + task date within week
+    return t.completed && taskDate(t) >= weekStartStr && taskDate(t) <= dateStr;
+  }).length;
 
   const q = searchQuery.toLowerCase().trim();
   const filtered = tasks
     .filter(
       (t) => {
         if (completingId === t.id) return true;
-        if (!showCompleted && t.completed) return false;
+        if (!showCompleted && (t.completed || t.completed_dates?.includes(dateStr))) return false;
         if (q && !t.content.toLowerCase().includes(q)) return false;
         return (t.persist && !t.completed && dateStr >= t.created_at.slice(0, 10)) ||
           (t.reminder_type === "weekly" && t.reminder_data.days.includes(currentDate.getDay())) ||
@@ -333,6 +341,7 @@ export default function App() {
       )}
       <TaskList
         tasks={filtered}
+        dateStr={dateStr}
         onToggle={toggleComplete}
         onDelete={deleteTask}
         onEdit={startEdit}

@@ -26,6 +26,8 @@ pub struct TaskItem {
     pub position: u32,
     pub reminder_type: String, pub reminder_data: ReminderData,
     pub last_reminded: Option<String>, pub created_at: String,
+    #[serde(default)]
+    pub completed_dates: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -240,11 +242,16 @@ fn toggle_complete(state: State<'_, AppState>, app: AppHandle, id: u32) -> Resul
     let path = data_path(&app, &settings);
     let mut data = load_tasks(&path);
     if let Some(t) = data.tasks.iter_mut().find(|t| t.id == id) {
-        t.completed = !t.completed;
-        // For weekly tasks being completed, anchor last_reminded to today's date
-        // so check_and_notify can determine which day it was completed on.
-        if t.completed && t.reminder_type == "weekly" {
-            t.last_reminded = Some(Local::now().format("%Y-%m-%d").to_string());
+        if t.reminder_type == "weekly" {
+            let today = Local::now().format("%Y-%m-%d").to_string();
+            if let Some(pos) = t.completed_dates.iter().position(|d| d == &today) {
+                t.completed_dates.remove(pos); // uncomplete today
+            } else {
+                t.completed_dates.push(today.clone()); // mark today completed
+                t.last_reminded = Some(today); // prevent re-notification
+            }
+        } else {
+            t.completed = !t.completed;
         }
     }
     save_tasks(&path, &data)?;
@@ -260,17 +267,6 @@ fn check_and_notify(state: State<'_, AppState>, app: AppHandle) -> Result<Vec<St
     let mut data = load_tasks(&path);
     let now = Local::now(); let mut alerts = vec![];
     let today_wd = now.weekday().num_days_from_sunday() as u8;
-    let today_str = now.format("%Y-%m-%d").to_string();
-
-    // Auto-reset weekly tasks completed on a previous day
-    for t in &mut data.tasks {
-        if t.reminder_type == "weekly" && t.completed {
-            if t.last_reminded.as_deref() != Some(today_str.as_str()) {
-                t.completed = false;
-            }
-        }
-    }
-
     use tauri_plugin_notification::NotificationExt;
     for t in &data.tasks {
         if t.completed { continue; }

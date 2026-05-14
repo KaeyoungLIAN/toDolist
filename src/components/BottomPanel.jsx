@@ -7,52 +7,6 @@ function fmt(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-/**
- * Generate individual task dates for a weekly recurring schedule.
- * Creates one task per active day for: future days this week + all days next week.
- * Each generated task is a "once" task (not shared weekly), so completing
- * Monday's task won't clear Tuesday's.
- *
- * @param {Set<number>} activeDays — day-of-week numbers (0=Sun, 1=Mon, ... 6=Sat)
- * @param {string} time — "HH:MM" format
- * @param {string} dateStr — "YYYY-MM-DD" current date anchor
- * @returns {Array<{datetime: string}>} array of {datetime} objects
- */
-function generateWeeklyDates(activeDays, time, dateStr) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const today = new Date(y, m - 1, d);
-  today.setHours(0, 0, 0, 0);
-
-  // Monday of this week
-  const dow = today.getDay();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-
-  const results = [];
-
-  for (const dayOfWeek of activeDays) {
-    // dayOfWeek: 0=Sun, 1=Mon ... 6=Sat
-    // Offset from Monday: Sun=6, Mon=0, Tue=1 ... Sat=5
-    const offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-
-    // This week's occurrence
-    const thisDate = new Date(monday);
-    thisDate.setDate(monday.getDate() + offset);
-
-    // Only include if today or future
-    if (thisDate >= today) {
-      results.push({ datetime: `${fmt(thisDate)}T${time}:00` });
-    }
-
-    // Next week's occurrence (always include)
-    const nextDate = new Date(thisDate);
-    nextDate.setDate(thisDate.getDate() + 7);
-    results.push({ datetime: `${fmt(nextDate)}T${time}:00` });
-  }
-
-  return results;
-}
-
 const DAY_KEYS = [1, 2, 3, 4, 5, 6, 0];
 
 export default function BottomPanel({ editingId, editText, editRtype, editRdata, onSave, onCancelEdit, dateStr, lang, onEmptySubmit }) {
@@ -96,7 +50,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     const text = content.trim();
     if (!text) {
       if (onEmptySubmit) onEmptySubmit();
@@ -112,29 +66,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
       return;
     }
 
-    if (editingId === null && rtype === "weekly") {
-      // Weekly task: generate individual "once" tasks for each day,
-      // so completing Monday's task doesn't clear Tuesday's.
-      const dates = generateWeeklyDates(activeDays, weeklyTime, dateStr);
-      if (dates.length === 0) return;
-      for (const d of dates) {
-        await onSave(text, "once", {
-          datetime: d.datetime, days: [], time: weeklyTime,
-        });
-      }
-      setContent("");
-      setRtype("once");
-      setActiveDays(new Set());
-      setExpanded(false);
-      setTaskMode("normal");
-      setOnceDate(dateStr);
-      setOnceTime("14:30");
-      userSetOnceRef.current = false;
-      inputRef.current?.focus();
-      return;
-    }
-
-    // Scheduled task (single once task or edit an existing weekly task)
+    // Scheduled task (once or weekly — weekly uses completed_dates for per-day tracking)
     const rd =
       rtype === "once"
         ? { datetime: `${onceDate || dateStr}T${onceTime}:00`, days: [], time: "09:00" }
