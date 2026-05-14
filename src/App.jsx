@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import TitleBar from "./components/TitleBar";
 import DateBar from "./components/DateBar";
 import TaskList from "./components/TaskList";
+import TaskCard from "./components/TaskCard";
 import BottomPanel from "./components/BottomPanel";
 import SettingsModal from "./components/SettingsModal";
 import WelcomeModal from "./components/WelcomeModal";
@@ -121,6 +122,19 @@ export default function App() {
       if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
       return a.position - b.position;
     });
+
+  // Global search: match all tasks, group by date
+  const searchResults = useMemo(() => {
+    if (!q) return [];
+    const matched = tasks.filter((t) => t.content.toLowerCase().includes(q));
+    const groups = {};
+    for (const t of matched) {
+      const d = taskDate(t);
+      if (!groups[d]) groups[d] = [];
+      groups[d].push(t);
+    }
+    return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a)); // newest first
+  }, [tasks, q]);
 
   // ── CRUD ──
   const addTask = useCallback(
@@ -322,30 +336,63 @@ export default function App() {
         yesterdayCompleted={yesterdayCompleted}
         weekCompleted={weekCompleted}
       />
-      {showSearch && (
-        <div className="search-bar">
-          <svg className="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            className="search-input"
-            type="text"
-            placeholder={t(lang, "searchPlaceholder")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            autoFocus
-          />
-          {searchQuery && (
-            <button className="search-clear" onClick={() => { setSearchQuery(""); setShowSearch(false); }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
+      {showSearch ? (
+        <div className="search-overlay">
+          <div className={"search-overlay-header" + (q ? " has-query" : "")}>
+            <svg className="search-overlay-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              className="search-overlay-input"
+              type="text"
+              placeholder={t(lang, "searchPlaceholder")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+            />
+            {searchQuery && (
+              <button className="search-overlay-close" onClick={() => { setSearchQuery(""); setShowSearch(false); }} title={t(lang, "close")}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
+          </div>
+          {q && (
+            <div className="search-overlay-results">
+              {searchResults.length === 0 ? (
+                <div className="search-overlay-empty">{t(lang, "noTasks")}</div>
+              ) : (
+                searchResults.map(([date, tasks]) => (
+                  <div key={date} className="search-date-group">
+                    <div className="search-date-label">{date}</div>
+                    {tasks.map((t) => (
+                      <TaskCard
+                        key={t.id}
+                        task={t}
+                        dateStr={taskDate(t)}
+                        index={0}
+                        onToggle={toggleComplete}
+                        onDelete={deleteTask}
+                        onEdit={startEdit}
+                        onPin={togglePin}
+                        onTogglePersist={togglePersist}
+                        lang={lang}
+                        deletingId={deletingId}
+                        completingId={completingId}
+                        isFirst={false} isLast={false}
+                        onMoveUp={()=>{}} onMoveDown={()=>{}}
+                      />
+                    ))}
+                  </div>
+                ))
+              )}
+            </div>
           )}
         </div>
-      )}
-      <TaskList
-        tasks={filtered}
+      ) : (
+        <TaskList
+          tasks={filtered}
         dateStr={dateStr}
         onToggle={toggleComplete}
         onDelete={deleteTask}
