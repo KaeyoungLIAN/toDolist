@@ -8,6 +8,15 @@
     "core:window:allow-set-always-on-top",
     "notification:default", "notification:allow-notify",
     "notification:allow-is-permission-granted",
-    "notification:allow-request-permission", "shell:default"
+    "notification:allow-request-permission",
+    "shell:default",
+    {
+      "identifier": "shell:allow-open",
+      "allow": [
+        { "url": "https://*" },
+        { "url": "http://*" },
+        { "url": "wemeet://*" }
+      ]
+    }
   ]
 }
