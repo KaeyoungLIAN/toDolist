@@ -69,7 +69,17 @@ export default function App() {
       .catch((e) => console.error("get_settings:", e));
   }, []);
 
-  useEffect(() => { loadTasks(); const iv = setInterval(loadTasks, 60000); return () => clearInterval(iv); }, [loadTasks]);
+  useEffect(() => {
+    let locked = false;
+    const poll = async () => {
+      if (locked) return;
+      locked = true;
+      try { await loadTasks(); } finally { locked = false; }
+    };
+    poll();
+    const iv = setInterval(poll, 60000);
+    return () => clearInterval(iv);
+  }, [loadTasks]);
   useEffect(() => { const cb = () => { if (!document.hidden) loadTasks(); }; document.addEventListener("visibilitychange", cb); return () => document.removeEventListener("visibilitychange", cb); }, [loadTasks]);
 
   // Sync theme to <html> classList
@@ -107,7 +117,7 @@ export default function App() {
   }).length;
 
   const q = searchQuery.toLowerCase().trim();
-  const filtered = tasks
+  const filtered = useMemo(() => tasks
     .filter(
       (t) => {
         if (completingId === t.id) return true;
@@ -121,7 +131,7 @@ export default function App() {
     .sort((a, b) => {
       if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
       return a.position - b.position;
-    });
+    }), [tasks, showCompleted, dateStr, currentDate, completingId, q]);
 
   // Global search: match all tasks, group by date
   const searchResults = useMemo(() => {
@@ -141,12 +151,9 @@ export default function App() {
     async (content, rtype, rdata, linkUrl) => {
       try {
         if (editingId !== null) {
-          const task = tasks.find((x) => x.id === editingId);
-          if (task) {
-            task.content = content;
-            task.reminder_type = rtype;
-            task.reminder_data = rdata;
-            task.link_url = linkUrl || null;
+          const original = tasks.find((x) => x.id === editingId);
+          if (original) {
+            const task = { ...original, content, reminder_type: rtype, reminder_data: rdata, link_url: linkUrl || null };
             await invoke("update_task", { task });
           }
           setEditingId(null);
@@ -173,7 +180,7 @@ export default function App() {
       if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
       setDeletingId(id);
 
-      // Delete from BACKEND first — eliminates race with reorder
+      // Delete from BACKEND first
       try {
         await invoke("delete_task", { id });
       } catch (e) {
@@ -183,21 +190,19 @@ export default function App() {
         return;
       }
 
-      // Backend done — now animate frontend
-      setTimeout(() => {
-        setTasks((prev) => prev.filter((t) => t.id !== id));
-        setDeletingId(null);
-        setUndoId(id);
-        setUndoContent(content.length > 30 ? content.slice(0, 30) + "..." : content);
-        setUndoTask(taskData);
+      // Backend done — immediately update frontend state
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+      setDeletingId(null);
+      setUndoId(id);
+      setUndoContent(content.length > 30 ? content.slice(0, 30) + "..." : content);
+      setUndoTask(taskData);
 
-        // 5s undo window — re-add to backend if user clicks Undo
-        undoTimerRef.current = setTimeout(() => {
-          setUndoId(null);
-          setUndoTask(null);
-          undoTimerRef.current = null;
-        }, 5000);
-      }, 380);
+      // 5s undo window
+      undoTimerRef.current = setTimeout(() => {
+        setUndoId(null);
+        setUndoTask(null);
+        undoTimerRef.current = null;
+      }, 5000);
     },
     [showToast, lang]
   );
@@ -418,6 +423,7 @@ export default function App() {
         dateStr={dateStr}
         lang={lang}
         onEmptySubmit={handleEmptySubmit}
+        showToast={showToast}
       />
       {toast && <div className="toast">{toast}</div>}
       {showSettings && (

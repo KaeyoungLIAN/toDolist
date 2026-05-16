@@ -9,7 +9,7 @@ function fmt(d) {
 
 const DAY_KEYS = [1, 2, 3, 4, 5, 6, 0];
 
-export default function BottomPanel({ editingId, editText, editRtype, editRdata, editLinkUrl, onSave, onCancelEdit, dateStr, lang, onEmptySubmit }) {
+export default function BottomPanel({ editingId, editText, editRtype, editRdata, editLinkUrl, onSave, onCancelEdit, dateStr, lang, onEmptySubmit, showToast }) {
   const [content, setContent] = useState("");
   const [taskMode, setTaskMode] = useState("normal"); // "normal" | "scheduled"
   const [rtype, setRtype] = useState("once");
@@ -64,10 +64,30 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
     });
   };
 
+  const isValidUrl = (url) => {
+    try {
+      const u = new URL(url);
+      return ['https:', 'http:', 'mailto:', 'tel:'].includes(u.protocol);
+    } catch {
+      return url.startsWith('wemeet://');
+    }
+  };
+
   const handleSubmit = () => {
     const text = content.trim();
     if (!text) {
       if (onEmptySubmit) onEmptySubmit();
+      return;
+    }
+
+    // Validate link URL
+    const rawUrl = linkType === "meeting" && meetingCode.trim()
+      ? `wemeet://page/inmeeting?meeting_code=${meetingCode.trim()}`
+      : linkType === "meeting" ? ""
+      : linkUrl;
+    if (rawUrl && !isValidUrl(rawUrl)) {
+      setToast(t(lang, "invalidLink"));
+      setTimeout(() => setToast(null), 2500);
       return;
     }
 
@@ -251,7 +271,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
                 className="link-url-input"
                 placeholder={t(lang, "meetingCode")}
                 value={meetingCode}
-                onChange={(e) => setMeetingCode(e.target.value.replace(/[^a-zA-Z0-9-]/g, ""))}
+                onChange={(e) => setMeetingCode(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))}
                 autoComplete="off"
               />
             )}

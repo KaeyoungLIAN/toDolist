@@ -114,6 +114,16 @@ fn save_tasks(path: &PathBuf, data: &TodoData) -> Result<(), String> {
     Ok(())
 }
 
+/// Load tasks + settings path in one call (DRY helper for commands that
+/// read/modify task data).
+fn load_tasks_with_settings(app: &AppHandle) -> (PathBuf, TodoData) {
+    let sp = settings_path(app);
+    let settings = load_settings(&sp);
+    let path = data_path(app, &settings);
+    let data = load_tasks(&path);
+    (path, data)
+}
+
 fn update_last_reminded(tasks: &mut [TaskItem]) {
     let now = Local::now();
     let today = now.format("%Y-%m-%d").to_string();
@@ -152,14 +162,10 @@ fn get_settings(app: AppHandle) -> Result<Settings, String> {
 #[tauri::command]
 fn update_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
     let path = settings_path(&app);
-    // If data_dir changed, reload tasks from new location into state
-    let _old = load_settings(&path);
-
     save_settings(&path, &settings)?;
 
     let state: State<'_, AppState> = app.state();
-    let new_path = data_path(&app, &settings);
-    let data = load_tasks(&new_path);
+    let (new_path, data) = load_tasks_with_settings(&app);
     *state.data.lock().map_err(|e| e.to_string())? = data.tasks.clone();
 
     Ok(())
@@ -173,8 +179,6 @@ fn pick_directory(app: AppHandle) -> Result<Option<String>, String> {
         .blocking_pick_folder();
     Ok(file.map(|p| p.to_string()))
 }
-
-// ── Task commands ──
 
 // ── Window commands ──
 
@@ -197,10 +201,7 @@ fn get_tasks(state: State<'_, AppState>, _app: AppHandle) -> Result<Vec<TaskItem
 fn add_task(state: State<'_, AppState>, app: AppHandle, content: String,
     reminder_type: String, reminder_data: ReminderData,
     link_url: Option<String>) -> Result<TaskItem, String> {
-    let s_path = settings_path(&app);
-    let settings = load_settings(&s_path);
-    let path = data_path(&app, &settings);
-    let mut data = load_tasks(&path);
+    let (path, mut data) = load_tasks_with_settings(&app);
     let position = data.tasks.len() as u32;
     let task = TaskItem {
         id: data.next_id, content, completed: false,
@@ -218,10 +219,7 @@ fn add_task(state: State<'_, AppState>, app: AppHandle, content: String,
 
 #[tauri::command]
 fn update_task(state: State<'_, AppState>, app: AppHandle, task: TaskItem) -> Result<(), String> {
-    let s_path = settings_path(&app);
-    let settings = load_settings(&s_path);
-    let path = data_path(&app, &settings);
-    let mut data = load_tasks(&path);
+    let (path, mut data) = load_tasks_with_settings(&app);
     if let Some(t) = data.tasks.iter_mut().find(|t| t.id == task.id) { *t = task; }
     save_tasks(&path, &data)?;
     *state.data.lock().map_err(|e| e.to_string())? = data.tasks.clone();
@@ -230,10 +228,7 @@ fn update_task(state: State<'_, AppState>, app: AppHandle, task: TaskItem) -> Re
 
 #[tauri::command]
 fn delete_task(state: State<'_, AppState>, app: AppHandle, id: u32) -> Result<(), String> {
-    let s_path = settings_path(&app);
-    let settings = load_settings(&s_path);
-    let path = data_path(&app, &settings);
-    let mut data = load_tasks(&path);
+    let (path, mut data) = load_tasks_with_settings(&app);
     data.tasks.retain(|t| t.id != id);
     save_tasks(&path, &data)?;
     *state.data.lock().map_err(|e| e.to_string())? = data.tasks.clone();
@@ -242,18 +237,15 @@ fn delete_task(state: State<'_, AppState>, app: AppHandle, id: u32) -> Result<()
 
 #[tauri::command]
 fn toggle_complete(state: State<'_, AppState>, app: AppHandle, id: u32) -> Result<(), String> {
-    let s_path = settings_path(&app);
-    let settings = load_settings(&s_path);
-    let path = data_path(&app, &settings);
-    let mut data = load_tasks(&path);
+    let (path, mut data) = load_tasks_with_settings(&app);
     if let Some(t) = data.tasks.iter_mut().find(|t| t.id == id) {
         if t.reminder_type == "weekly" {
             let today = Local::now().format("%Y-%m-%d").to_string();
             if let Some(pos) = t.completed_dates.iter().position(|d| d == &today) {
-                t.completed_dates.remove(pos); // uncomplete today
+                t.completed_dates.remove(pos);
             } else {
-                t.completed_dates.push(today.clone()); // mark today completed
-                t.last_reminded = Some(today); // prevent re-notification
+                t.completed_dates.push(today.clone());
+                t.last_reminded = Some(today);
             }
         } else {
             t.completed = !t.completed;
@@ -266,10 +258,7 @@ fn toggle_complete(state: State<'_, AppState>, app: AppHandle, id: u32) -> Resul
 
 #[tauri::command]
 fn check_and_notify(state: State<'_, AppState>, app: AppHandle) -> Result<Vec<String>, String> {
-    let s_path = settings_path(&app);
-    let settings = load_settings(&s_path);
-    let path = data_path(&app, &settings);
-    let mut data = load_tasks(&path);
+    let (path, mut data) = load_tasks_with_settings(&app);
     let now = Local::now(); let mut alerts = vec![];
     let today_wd = now.weekday().num_days_from_sunday() as u8;
     use tauri_plugin_notification::NotificationExt;
@@ -302,10 +291,7 @@ fn check_and_notify(state: State<'_, AppState>, app: AppHandle) -> Result<Vec<St
 
 #[tauri::command]
 fn reorder_tasks(state: State<'_, AppState>, app: AppHandle, ids: Vec<u32>) -> Result<(), String> {
-    let s_path = settings_path(&app);
-    let settings = load_settings(&s_path);
-    let path = data_path(&app, &settings);
-    let mut data = load_tasks(&path);
+    let (path, mut data) = load_tasks_with_settings(&app);
 
     for (i, id) in ids.iter().enumerate() {
         if let Some(t) = data.tasks.iter_mut().find(|t| t.id == *id) {
@@ -319,11 +305,14 @@ fn reorder_tasks(state: State<'_, AppState>, app: AppHandle, ids: Vec<u32>) -> R
 
 struct AppState { data: Mutex<Vec<TaskItem>> }
 
-/// Open a URL using the system protocol handler, bypassing Tauri's shell
-/// plugin scope so that custom protocols like wemeet:// work without
-/// WebView2 security prompts.
+/// Open a URL using the system protocol handler. Validates the scheme on the
+/// Rust side so this is safe even without Tauri's shell plugin scope.
 #[tauri::command]
 fn open_url(url: String) -> Result<(), String> {
+    let allowed = ["https://", "http://", "mailto:", "tel:", "wemeet://"];
+    if !allowed.iter().any(|s| url.starts_with(s)) {
+        return Err(format!("URL scheme not allowed: {}", url));
+    }
     open::that(&url).map_err(|e| format!("Failed to open URL: {}", e))
 }
 
@@ -345,6 +334,16 @@ pub fn run() {
                 w.set_effects(EffectsBuilder::new()
                     .effect(Effect::Acrylic)
                     .build())?;
+
+                // Close → hide (minimize to taskbar) on Windows
+                let handle = app.handle().clone();
+                w.on_window_event(move |event| {
+                    if let tauri::WindowEvent::CloseRequested { .. } = event {
+                        if let Some(w) = handle.get_webview_window("main") {
+                            w.hide().ok();
+                        }
+                    }
+                });
             }
             Ok(())
         })

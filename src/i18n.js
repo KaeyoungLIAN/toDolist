@@ -44,6 +44,7 @@ const i18n = {
     todayToDo: "Today to-do",
     linkPlaceholder: "Link URL",
     meetingCode: "Meeting code",
+    invalidLink: "Invalid link URL",
   },
   zh: {
     appName: "玻璃待办",
@@ -90,6 +91,7 @@ const i18n = {
     todayToDo: "今日待完成",
     linkPlaceholder: "网页链接",
     meetingCode: "会议号",
+    invalidLink: "链接格式无效",
   },
 };
 
