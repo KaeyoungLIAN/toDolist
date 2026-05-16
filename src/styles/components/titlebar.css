@@ -79,6 +79,7 @@
   border-radius: 3px; transition: background var(--transition-fast);
 }
 .help-item:hover { background: var(--bg-glass-hover); color: var(--text-primary) }
+.help-item.top { align-items: flex-start }
 .help-icon { flex-shrink: 0; opacity: 0.75 }
 .help-item:hover .help-icon { opacity: 1 }
 .help-item-content {

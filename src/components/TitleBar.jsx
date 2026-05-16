@@ -88,12 +88,12 @@ export default function TitleBar({ onOpenSettings, showSearch, onToggleSearch, l
         >
           <div className="help-popover-title">{lang === "zh" ? "操作说明" : "Quick guide"}</div>
           <div className="help-popover-list">
-            <div className="help-item">
+            <div className="help-item top">
               <svg className="help-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
               </svg>
               <div className="help-item-content">
-                <div>{lang === "zh" ? "创建任务：底部输入栏打字。任务分为两类" : "Create tasks: Type in the bar. Two types:"}</div>
+                <div>{lang === "zh" ? "创建任务：底部输入栏打字后按回车创建" : "Create tasks: Type in the bar and press Enter"}</div>
                 <div className="help-sub-item">{lang === "zh" ? "普通任务：无时间限制，不会到期提醒" : "Normal: No due date, no reminder"}</div>
                 <div className="help-sub-item">{lang === "zh" ? "定时任务：可选单次（日期+时间）或每周（星期+时间），到期自动提醒" : "Scheduled: Once (date+time) or Weekly (day+time), auto-remind"}</div>
               </div>
