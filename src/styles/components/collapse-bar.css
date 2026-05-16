@@ -1,0 +1,42 @@
+/* ── Collapsed mini-bar ── */
+.collapse-bar {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: var(--bg-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 9999;
+  user-select: none;
+  transition: none;
+}
+
+.collapse-bar:hover {
+  background: var(--bg-glass-hover);
+}
+
+.collapse-bar-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.collapse-bar-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.collapse-bar-count {
+  color: var(--accent);
+  font-weight: 600;
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import TitleBar from "./components/TitleBar";
 import DateBar from "./components/DateBar";
 import TaskList from "./components/TaskList";
@@ -37,6 +38,7 @@ export default function App() {
   const [showSearch, setShowSearch] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const undoTimerRef = useRef(null);
 
   const showToast = useCallback((msg) => {
@@ -316,7 +318,56 @@ export default function App() {
     setTimeout(() => setToast(null), 2500);
   }, [lang]);
 
-  return (
+  // ── Collapse / Mini-mode ──
+  const todayRemaining = useMemo(() => {
+    return tasks.filter(t => {
+      if (t.reminder_type === "weekly") {
+        return !(t.completed_dates || []).includes(dateStr);
+      }
+      return !t.completed;
+    }).length;
+  }, [tasks, dateStr]);
+
+  const toggleCollapsed = useCallback(async () => {
+    const win = getCurrentWindow();
+    if (!collapsed) {
+      await win.setMinSize(new LogicalSize(200, 30));
+      await win.setSize(new LogicalSize(240, 44));
+      await win.setAlwaysOnTop(true);
+      setCollapsed(true);
+    } else {
+      await win.setSize(new LogicalSize(500, 650));
+      await win.setMinSize(new LogicalSize(400, 400));
+      await win.setAlwaysOnTop(false);
+      setCollapsed(false);
+    }
+  }, [collapsed]);
+
+  // Keyboard shortcut: ` backtick to collapse/expand
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "`" || e.code === "Backquote") {
+        const tag = document.activeElement?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA") return;
+        e.preventDefault();
+        toggleCollapsed();
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [toggleCollapsed]);
+
+  return collapsed ? (
+    <div className="collapse-bar" data-tauri-drag-region onClick={toggleCollapsed}>
+      <svg className="collapse-bar-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>
+      <span className="collapse-bar-text">
+        <span className="collapse-bar-count">{todayRemaining}</span>
+        {lang === "zh" ? " 今日剩余" : todayRemaining === 1 ? " task left today" : " tasks left today"}
+      </span>
+    </div>
+  ) : (
     <>
       <TitleBar
         onOpenSettings={() => setShowSettings(true)}

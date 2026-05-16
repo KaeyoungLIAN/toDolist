@@ -44,6 +44,8 @@ const i18n = {
     todayToDo: "Today to-do",
     linkPlaceholder: "Link URL",
     meetingCode: "Meeting code",
+    collapsedRemaining: "{count} task left today",
+    collapsedRemainingPlural: "{count} tasks left today",
   },
   zh: {
     appName: "玻璃待办",
@@ -90,6 +92,8 @@ const i18n = {
     todayToDo: "今日待完成",
     linkPlaceholder: "网页链接",
     meetingCode: "会议号",
+    collapsedRemaining: "今日剩余{count}个任务",
+    collapsedRemainingPlural: "今日剩余{count}个任务",
   },
 };
 
