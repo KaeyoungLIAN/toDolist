@@ -8,6 +8,8 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
   const readyRef = useRef(false);
   const startPosRef = useRef({ x: 0, y: 0 });
   const winPosRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef(null);
+  const pendingPosRef = useRef(null);
 
   const handlePointerDown = useCallback(async (e) => {
     // Don't drag if user clicked the pin button or remaining-tasks text
@@ -26,29 +28,41 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
       readyRef.current = true;
     } catch {
       capturedRef.current = false;
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+      pendingPosRef.current = null;
       try { barRef.current?.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
       return;
     }
+  }, []);
+
+  const flushPosition = useCallback(() => {
+    rafRef.current = null;
+    const pos = pendingPosRef.current;
+    if (!pos) return;
+    pendingPosRef.current = null;
+    try {
+      getCurrentWindow().setPosition(new PhysicalPosition(pos.x, pos.y));
+    } catch { /* ignore */ }
   }, []);
 
   const handlePointerMove = useCallback((e) => {
     if (!capturedRef.current || !readyRef.current) return;
     const dx = e.screenX - startPosRef.current.x;
     const dy = e.screenY - startPosRef.current.y;
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-      draggingRef.current = true;
-      try {
-        getCurrentWindow().setPosition(
-          new PhysicalPosition(
-            Math.round(winPosRef.current.x + dx * winPosRef.current.sf),
-            Math.round(winPosRef.current.y + dy * winPosRef.current.sf)
-          )
-        );
-      } catch { /* ignore */ }
+    if (Math.abs(dx) <= 3 && Math.abs(dy) <= 3) return;
+    draggingRef.current = true;
+    pendingPosRef.current = {
+      x: Math.round(winPosRef.current.x + dx * winPosRef.current.sf),
+      y: Math.round(winPosRef.current.y + dy * winPosRef.current.sf),
+    };
+    if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(flushPosition);
     }
-  }, []);
+  }, [flushPosition]);
 
   const handlePointerUp = useCallback(() => {
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    pendingPosRef.current = null;
     capturedRef.current = false;
     readyRef.current = false;
     draggingRef.current = false;
