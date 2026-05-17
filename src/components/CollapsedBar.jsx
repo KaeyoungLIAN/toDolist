@@ -16,6 +16,8 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
     readyRef.current = false;
     draggingRef.current = false;
     startPosRef.current = { x: e.screenX, y: e.screenY };
+    // Capture pointer so move/up events fire even when mouse leaves the element
+    try { barRef.current?.setPointerCapture(e.pointerId); } catch { /* ignore */ }
     try {
       const win = getCurrentWindow();
       const pos = await win.outerPosition();
@@ -24,6 +26,7 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
       readyRef.current = true;
     } catch {
       capturedRef.current = false;
+      try { barRef.current?.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
       return;
     }
   }, []);
@@ -58,6 +61,7 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onLostPointerCapture={handlePointerUp}
       style={{ touchAction: "none" }}
     >
       <div className="collapse-bar-inner">
