@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import TitleBar from "./components/TitleBar";
 import CollapsedBar from "./components/CollapsedBar";
 import DateBar from "./components/DateBar";
@@ -27,7 +27,8 @@ export default function App() {
   const [collapsed, setCollapsed] = useState(false);
   const [alwaysOnTop, setAlwaysOnTop] = useState(false);
 
-  // ── Hooks ──
+  const COLLAPSED_HEIGHT = 40;
+  const originalSizeRef = useRef(null);
   const taskApi = useTasks(lang);
   const {
     loadTasks, addTask, deleteTask, toggleComplete,
@@ -131,8 +132,14 @@ export default function App() {
     [taskApi.tasks, dateStr, currentDate]
   );
 
-  const handleToggleCollapse = useCallback(() => {
-    setCollapsed((c) => !c);
+  const handleToggleCollapse = useCallback(async () => {
+    const win = getCurrentWindow();
+    const size = await win.outerSize();
+    originalSizeRef.current = { width: size.width, height: size.height };
+    await win.setMinSize(new LogicalSize(400, COLLAPSED_HEIGHT));
+    await win.setResizable(false);
+    await win.setSize(new LogicalSize(size.width, COLLAPSED_HEIGHT));
+    setCollapsed(true);
   }, []);
 
   const handleTogglePin = useCallback(async () => {
@@ -144,8 +151,28 @@ export default function App() {
     } catch (e) { console.error("toggle pin:", e); }
   }, [alwaysOnTop]);
 
+  const handleExpand = useCallback(async () => {
+    const win = getCurrentWindow();
+    if (originalSizeRef.current) {
+      await win.setSize(new LogicalSize(originalSizeRef.current.width, originalSizeRef.current.height));
+      await win.setMinSize(new LogicalSize(400, 400));
+      await win.setResizable(true);
+    }
+    setCollapsed(false);
+  }, []);
+
   return (
     <>
+      {collapsed ? (
+        <CollapsedBar
+          lang={lang}
+          alwaysOnTop={alwaysOnTop}
+          onTogglePin={handleTogglePin}
+          onExpand={handleExpand}
+          remaining={todayRemaining}
+        />
+      ) : (
+        <>
       <TitleBar
         onOpenSettings={() => setShowSettings(true)}
         showSearch={showSearch}
@@ -154,16 +181,6 @@ export default function App() {
         collapsed={collapsed}
         onToggleCollapse={handleToggleCollapse}
       />
-      {collapsed ? (
-        <CollapsedBar
-          lang={lang}
-          alwaysOnTop={alwaysOnTop}
-          onTogglePin={handleTogglePin}
-          onExpand={() => setCollapsed(false)}
-          remaining={todayRemaining}
-        />
-      ) : (
-        <>
       <DateBar
         dateStr={dateStr}
         weekday={t(lang, WN[currentDate.getDay()])}
