@@ -4,12 +4,14 @@ import { LogicalPosition, getCurrentWindow } from "@tauri-apps/api/window";
 export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand, remaining }) {
   const barRef = useRef(null);
   const draggingRef = useRef(false);
+  const capturedRef = useRef(false);
   const startPosRef = useRef({ x: 0, y: 0 });
   const winPosRef = useRef({ x: 0, y: 0 });
 
   const handlePointerDown = useCallback(async (e) => {
     // Don't drag if user clicked the pin button
     if (e.target.closest(".collapse-bar-pin-btn")) return;
+    capturedRef.current = true;
     draggingRef.current = false;
     startPosRef.current = { x: e.screenX, y: e.screenY };
     try {
@@ -17,12 +19,13 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
       const pos = await win.outerPosition();
       winPosRef.current = { x: pos.x, y: pos.y };
     } catch {
-      // Can't get position — skip drag, treat as click
+      capturedRef.current = false;
       return;
     }
   }, []);
 
   const handlePointerMove = useCallback((e) => {
+    if (!capturedRef.current) return;
     const dx = e.screenX - startPosRef.current.x;
     const dy = e.screenY - startPosRef.current.y;
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
@@ -39,6 +42,7 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
   }, []);
 
   const handlePointerUp = useCallback(() => {
+    capturedRef.current = false;
     draggingRef.current = false;
   }, []);
 
