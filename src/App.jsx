@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import TitleBar from "./components/TitleBar";
+import CollapsedBar from "./components/CollapsedBar";
 import DateBar from "./components/DateBar";
 import TaskList from "./components/TaskList";
 import TaskCard from "./components/TaskCard";
@@ -22,6 +24,8 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [alwaysOnTop, setAlwaysOnTop] = useState(false);
 
   // ── Hooks ──
   const taskApi = useTasks(lang);
@@ -115,6 +119,31 @@ export default function App() {
     loadTasks();
   }, [loadTasks]);
 
+  // ── Collapse ──
+  const todayRemaining = useMemo(() =>
+    taskApi.tasks.filter((t) => {
+      if (t.completed) return false;
+      const matchesToday = (t.persist && !t.completed && dateStr >= t.created_at.slice(0, 10)) ||
+        (t.reminder_type === "weekly" && t.reminder_data.days.includes(currentDate.getDay())) ||
+        (t.reminder_data.datetime && t.reminder_data.datetime.startsWith(dateStr));
+      return matchesToday;
+    }).length,
+    [taskApi.tasks, dateStr, currentDate]
+  );
+
+  const handleToggleCollapse = useCallback(() => {
+    setCollapsed((c) => !c);
+  }, []);
+
+  const handleTogglePin = useCallback(async () => {
+    try {
+      const win = getCurrentWindow();
+      const next = !alwaysOnTop;
+      await win.setAlwaysOnTop(next);
+      setAlwaysOnTop(next);
+    } catch (e) { console.error("toggle pin:", e); }
+  }, [alwaysOnTop]);
+
   return (
     <>
       <TitleBar
@@ -122,7 +151,19 @@ export default function App() {
         showSearch={showSearch}
         onToggleSearch={toggleSearch}
         lang={lang}
+        collapsed={collapsed}
+        onToggleCollapse={handleToggleCollapse}
       />
+      {collapsed ? (
+        <CollapsedBar
+          lang={lang}
+          alwaysOnTop={alwaysOnTop}
+          onTogglePin={handleTogglePin}
+          onExpand={() => setCollapsed(false)}
+          remaining={todayRemaining}
+        />
+      ) : (
+        <>
       <DateBar
         dateStr={dateStr}
         weekday={t(lang, WN[currentDate.getDay()])}
@@ -220,6 +261,8 @@ export default function App() {
         showToast={showToast}
       />
       {toast && <div className="toast">{toast}</div>}
+        </> 
+      ) /* end: not collapsed */}
       {showSettings && (
         <SettingsModal
           lang={lang}

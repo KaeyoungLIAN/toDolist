@@ -1,0 +1,63 @@
+#collapse-bar {
+  flex-shrink: 0;
+  background: var(--bg-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border-glass);
+  box-shadow: inset 0 1px 0 var(--border-glass-inner), 0 1px 8px rgba(12,12,16,0.2);
+  cursor: default;
+}
+
+.collapse-bar-inner {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.collapse-bar-pin-btn {
+  width: 30px; height: 26px;
+  background: transparent; border: none;
+  color: var(--text-tertiary); cursor: pointer;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+.collapse-bar-pin-btn:hover { background: var(--bg-glass-hover); color: var(--text-primary) }
+.collapse-bar-pin-btn:active { transform: scale(0.92) }
+.collapse-bar-pin-btn.active { color: var(--accent); background: var(--accent-dim) }
+
+.collapse-bar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  pointer-events: none;
+}
+
+.collapse-bar-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); opacity: 0.5; flex-shrink: 0;
+}
+
+.collapse-bar-title {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.collapse-bar-remaining {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity var(--transition-fast);
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+.collapse-bar-remaining:hover { opacity: 0.75 }
