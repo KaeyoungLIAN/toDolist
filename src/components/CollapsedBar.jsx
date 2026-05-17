@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from "react";
-import { PhysicalPosition, getCurrentWindow } from "@tauri-apps/api/window";
+import { PhysicalPosition, getCurrentWindow, Effect } from "@tauri-apps/api/window";
 
 export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand, remaining }) {
   const barRef = useRef(null);
@@ -27,6 +27,8 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
       winPosRef.current = { x: pos.x, y: pos.y, sf };
       readyRef.current = true;
       barRef.current?.classList.add("dragging");
+      // Remove acrylic/blur during drag for smooth movement
+      try { win.clearEffects(); } catch { /* ignore */ }
     } catch {
       capturedRef.current = false;
       if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
@@ -68,6 +70,8 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
     readyRef.current = false;
     draggingRef.current = false;
     barRef.current?.classList.remove("dragging");
+    // Restore acrylic/blur effect after drag
+    try { getCurrentWindow().setEffects({ effects: [Effect.Acrylic] }); } catch { /* ignore */ }
   }, []);
 
   return (
