@@ -68,6 +68,7 @@ const i18n = {
     webLink: "Web link",
     meetingLink: "Tencent Meeting",
     glassEffect: "Glass effect",
+    glassEffectWarning: "Enabling may cause dragging to feel slower",
   },
   zh: {
     appName: "玻璃待办",
@@ -138,6 +139,7 @@ const i18n = {
     webLink: "网页链接",
     meetingLink: "腾讯会议",
     glassEffect: "毛玻璃效果",
+    glassEffectWarning: "开启后拖拽窗口可能变慢",
   },
 };
 

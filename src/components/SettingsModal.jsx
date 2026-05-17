@@ -115,6 +115,9 @@ export default function SettingsModal({ lang, theme, showCompleted, showWelcome,
               </div>
               <span className="toggle-label">{settings.glass_effect ? t(settings.language, "yes") : t(settings.language, "no")}</span>
             </label>
+            {settings.glass_effect && (
+              <div className="settings-hint">{t(settings.language, "glassEffectWarning")}</div>
+            )}
           </div>
 
           {/* Theme */}

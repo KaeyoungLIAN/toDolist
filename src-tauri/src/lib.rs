@@ -345,6 +345,19 @@ fn open_url(url: String) -> Result<(), String> {
     open::that(&url).map_err(|e| format!("Failed to open URL: {}", e))
 }
 
+/// Apply the Windows acrylic effect at runtime.
+/// More reliable than calling setEffects from JS.
+#[tauri::command]
+fn set_glass_effect(app: AppHandle) -> Result<(), String> {
+    if let Some(w) = app.get_webview_window("main") {
+        #[cfg(target_os = "windows")]
+        w.set_effects(EffectsBuilder::new()
+            .effect(Effect::Acrylic)
+            .build()).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
@@ -381,7 +394,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_tasks, add_task, update_task, delete_task, toggle_complete, check_and_notify,
             get_settings, update_settings, pick_directory, reorder_tasks,
-            minimize_window, open_url,
+            minimize_window, open_url, set_glass_effect,
         ])
         .run(tauri::generate_context!())
         .expect("error running GlassTodo");

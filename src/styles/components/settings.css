@@ -89,6 +89,7 @@
 }
 .toggle-track.on .toggle-thumb { transform: translateX(16px); background: var(--accent) }
 .toggle-label { font-size: 12px; color: var(--text-secondary); font-weight: 500 }
+.settings-hint { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-top: 2px }
 
 /* ── Welcome Modal ── */
 .welcome-modal {
