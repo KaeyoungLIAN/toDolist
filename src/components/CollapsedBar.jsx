@@ -10,8 +10,8 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
   const winPosRef = useRef({ x: 0, y: 0 });
 
   const handlePointerDown = useCallback(async (e) => {
-    // Don't drag if user clicked the pin button
-    if (e.target.closest(".collapse-bar-pin-btn")) return;
+    // Don't drag if user clicked the pin button or remaining-tasks text
+    if (e.target.closest(".collapse-bar-pin-btn") || e.target.closest(".collapse-bar-remaining")) return;
     capturedRef.current = true;
     readyRef.current = false;
     draggingRef.current = false;
