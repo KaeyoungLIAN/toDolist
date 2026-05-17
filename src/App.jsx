@@ -142,6 +142,7 @@ export default function App() {
       await win.setMinSize(new LogicalSize(COLLAPSED_WIDTH, COLLAPSED_HEIGHT));
       await win.setResizable(false);
       await win.setSize(new PhysicalSize(Math.round(COLLAPSED_WIDTH * sf), Math.round(COLLAPSED_HEIGHT * sf)));
+      await win.setSkipTaskbar(true);
     } catch (e) { console.error("collapse:", e); }
     setCollapsed(true);
   }, []);
@@ -162,6 +163,7 @@ export default function App() {
         await win.setSize(originalSizeRef.current.size);
         await win.setMinSize(new LogicalSize(400, 400));
         await win.setResizable(true);
+        await win.setSkipTaskbar(false);
       }
     } catch (e) { console.error("expand:", e); }
     setCollapsed(false);
