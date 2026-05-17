@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from "react";
-import { LogicalPosition, getCurrentWindow } from "@tauri-apps/api/window";
+import { PhysicalPosition, getCurrentWindow } from "@tauri-apps/api/window";
 
 export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand, remaining }) {
   const barRef = useRef(null);
@@ -17,7 +17,8 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
     try {
       const win = getCurrentWindow();
       const pos = await win.outerPosition();
-      winPosRef.current = { x: pos.x, y: pos.y };
+      const sf = await win.scaleFactor();
+      winPosRef.current = { x: pos.x, y: pos.y, sf };
     } catch {
       capturedRef.current = false;
       return;
@@ -32,9 +33,9 @@ export default function CollapsedBar({ lang, alwaysOnTop, onTogglePin, onExpand,
       draggingRef.current = true;
       try {
         getCurrentWindow().setPosition(
-          new LogicalPosition(
-            winPosRef.current.x + dx,
-            winPosRef.current.y + dy
+          new PhysicalPosition(
+            Math.round(winPosRef.current.x + dx * winPosRef.current.sf),
+            Math.round(winPosRef.current.y + dy * winPosRef.current.sf)
           )
         );
       } catch { /* ignore */ }
