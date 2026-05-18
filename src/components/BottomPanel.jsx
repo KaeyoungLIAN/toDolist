@@ -17,6 +17,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
   const [linkType, setLinkType] = useState("url");
   const [linkUrl, setLinkUrl] = useState("");
   const [meetingCode, setMeetingCode] = useState("");
+  const [advanceMinutes, setAdvanceMinutes] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const inputRef = useRef(null);
   const userSetOnceRef = useRef(false);
@@ -102,8 +103,8 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
 
     const rd =
       rtype === "once"
-        ? { datetime: `${onceDate || dateStr}T${onceTime}:00`, days: [], time: "09:00" }
-        : { datetime: null, days: activeDays.size ? [...activeDays] : [1], time: weeklyTime };
+        ? { datetime: `${onceDate || dateStr}T${onceTime}:00`, days: [], time: "09:00", advance_minutes: advanceMinutes }
+        : { datetime: null, days: activeDays.size ? [...activeDays] : [1], time: weeklyTime, advance_minutes: advanceMinutes };
     onSave(text, rtype, rd, finalLinkUrl);
     setContent("");
     setLinkUrl("");
@@ -111,6 +112,7 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
     if (editingId === null) {
       setRtype("once");
       setActiveDays(new Set());
+      setAdvanceMinutes(0);
       setExpanded(false);
       setTaskMode("normal");
       setOnceDate(dateStr);
@@ -194,6 +196,8 @@ export default function BottomPanel({ editingId, editText, editRtype, editRdata,
           onLinkUrlChange={setLinkUrl}
           meetingCode={meetingCode}
           onMeetingCodeChange={setMeetingCode}
+          advanceMin={advanceMinutes}
+          onAdvanceMinChange={setAdvanceMinutes}
         />
       </div>
     </div>

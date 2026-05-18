@@ -13,6 +13,8 @@ pub struct ReminderData {
     pub datetime: Option<String>,
     pub days: Vec<u8>,
     pub time: String,
+    #[serde(default)]
+    pub advance_minutes: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -155,7 +157,8 @@ fn is_reminder_due(task: &TaskItem, now: NaiveDateTime) -> bool {
                 Ok(p) => p,
                 Err(_) => return false,
             };
-            parsed <= now
+            let advance = chrono::Duration::minutes(task.reminder_data.advance_minutes as i64);
+            parsed - advance <= now
         }
         "weekly" => {
             let wd = now.weekday().num_days_from_sunday() as u8;
@@ -164,7 +167,8 @@ fn is_reminder_due(task: &TaskItem, now: NaiveDateTime) -> bool {
                 Ok(t) => t,
                 Err(_) => return false,
             };
-            now.date().and_time(rt) <= now
+            let advance = chrono::Duration::minutes(task.reminder_data.advance_minutes as i64);
+            now.date().and_time(rt) - advance <= now
         }
         _ => false,
     }

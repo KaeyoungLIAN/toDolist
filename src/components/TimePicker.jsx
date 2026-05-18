@@ -169,8 +169,8 @@ export default function TimePicker({ value, onChange, lang }) {
               <button
                 type="button"
                 className="timepicker-arrow"
-                onClick={() => setEditHour((h) => wrapInc(h, 24))}
-                aria-label={t(lang, "increaseHour")}
+                onClick={() => setEditHour((h) => wrapDec(h, 24))}
+                aria-label={t(lang, "decreaseHour")}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="18 15 12 9 6 15" />
@@ -180,8 +180,8 @@ export default function TimePicker({ value, onChange, lang }) {
               <button
                 type="button"
                 className="timepicker-arrow"
-                onClick={() => setEditHour((h) => wrapDec(h, 24))}
-                aria-label={t(lang, "decreaseHour")}
+                onClick={() => setEditHour((h) => wrapInc(h, 24))}
+                aria-label={t(lang, "increaseHour")}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="6 9 12 15 18 9" />
@@ -196,8 +196,8 @@ export default function TimePicker({ value, onChange, lang }) {
               <button
                 type="button"
                 className="timepicker-arrow"
-                onClick={() => setEditMin((m) => wrapInc(m, 60))}
-                aria-label={t(lang, "increaseMinute")}
+                onClick={() => setEditMin((m) => wrapDec(m, 60))}
+                aria-label={t(lang, "decreaseMinute")}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="18 15 12 9 6 15" />
@@ -207,8 +207,8 @@ export default function TimePicker({ value, onChange, lang }) {
               <button
                 type="button"
                 className="timepicker-arrow"
-                onClick={() => setEditMin((m) => wrapDec(m, 60))}
-                aria-label={t(lang, "decreaseMinute")}
+                onClick={() => setEditMin((m) => wrapInc(m, 60))}
+                aria-label={t(lang, "increaseMinute")}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="6 9 12 15 18 9" />

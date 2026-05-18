@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import DatePicker from "./DatePicker";
 import TimePicker from "./TimePicker";
 import { t, dayLabels } from "../i18n";
@@ -11,7 +11,34 @@ export default function ScheduledOptions({
   activeDays, onToggleDay, weeklyTime, onWeeklyTimeChange,
   linkType, onLinkTypeChange, linkUrl, onLinkUrlChange,
   meetingCode, onMeetingCodeChange,
+  advanceMin, onAdvanceMinChange,
 }) {
+  const [advanceOpen, setAdvanceOpen] = useState(false);
+  const advanceRef = useRef(null);
+  const ADVANCE_OPTIONS = [0, 5, 10, 15, 30, 60];
+
+  // Click-outside close for advance popup
+  useEffect(() => {
+    if (!advanceOpen) return;
+    const handle = (e) => {
+      if (advanceRef.current && !advanceRef.current.contains(e.target)) {
+        setAdvanceOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [advanceOpen]);
+
+  // Close advance popup when switching reminder type
+  useEffect(() => {
+    setAdvanceOpen(false);
+  }, [rtype]);
+
+  const advanceLabel = (m) => {
+    if (m === 0) return t(lang, "remindOnTime");
+    return `${m}${t(lang, "minAbbr")}`;
+  };
+
   return (
     <div id="reminder-inner">
       <div id="scheduled-row">
@@ -34,6 +61,21 @@ export default function ScheduledOptions({
             <DatePicker value={onceDate} onChange={onOnceDateChange} lang={lang} />
             <span className="picker-sep">–</span>
             <TimePicker value={onceTime} onChange={onOnceTimeChange} lang={lang} />
+            <div className="advance-wrapper" ref={advanceRef}>
+              <button className="advance-trigger" onClick={() => setAdvanceOpen(!advanceOpen)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                {advanceLabel(advanceMin)}
+              </button>
+              {advanceOpen && (
+                <div className="advance-popup">
+                  {ADVANCE_OPTIONS.map((m) => (
+                    <button key={m} className={"advance-option" + (m === advanceMin ? " active" : "")}
+                      onClick={() => { onAdvanceMinChange(m); setAdvanceOpen(false); }}
+                    >{advanceLabel(m)}</button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="picker-line">
@@ -52,6 +94,21 @@ export default function ScheduledOptions({
               })()}
             </div>
             <TimePicker value={weeklyTime} onChange={onWeeklyTimeChange} lang={lang} />
+            <div className="advance-wrapper" ref={advanceRef}>
+              <button className="advance-trigger" onClick={() => setAdvanceOpen(!advanceOpen)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                {advanceLabel(advanceMin)}
+              </button>
+              {advanceOpen && (
+                <div className="advance-popup">
+                  {ADVANCE_OPTIONS.map((m) => (
+                    <button key={m} className={"advance-option" + (m === advanceMin ? " active" : "")}
+                      onClick={() => { onAdvanceMinChange(m); setAdvanceOpen(false); }}
+                    >{advanceLabel(m)}</button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -69,6 +69,9 @@ const i18n = {
     meetingLink: "Tencent Meeting",
     glassEffect: "Glass effect",
     glassEffectWarning: "Enabling may cause dragging to feel slower",
+    remindEarly: "Remind early",
+    remindOnTime: "On time",
+    minAbbr: "min",
   },
   zh: {
     appName: "玻璃待办",
@@ -140,6 +143,9 @@ const i18n = {
     meetingLink: "腾讯会议",
     glassEffect: "毛玻璃效果",
     glassEffectWarning: "开启后拖拽窗口可能变慢",
+    remindEarly: "提前提醒",
+    remindOnTime: "准时",
+    minAbbr: "分钟",
   },
 };
 
