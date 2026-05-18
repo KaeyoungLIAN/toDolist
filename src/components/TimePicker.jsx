@@ -9,6 +9,8 @@ export default function TimePicker({ value, onChange, lang }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
   const prevOpenRef = useRef(false);
+  const inputRef = useRef(null);
+  const [editing, setEditing] = useState(null); // 'hour', 'minute', or null
 
   // Parse current value
   const parts = value ? value.split(":") : [];
@@ -18,12 +20,12 @@ export default function TimePicker({ value, onChange, lang }) {
   const [editHour, setEditHour] = useState(initHour);
   const [editMin, setEditMin] = useState(initMin);
 
-  // Wheel handler: scroll up (deltaY<0) increments, scroll down decrements
+  // Wheel handler: scroll up (deltaY<0) decrements, scroll down increments
   const handleWheel = useCallback((setter, maxVal) => (e) => {
     e.preventDefault();
     setter((v) => {
-      if (e.deltaY < 0) return (v + 1) % maxVal;
-      return (v - 1 + maxVal) % maxVal;
+      if (e.deltaY < 0) return (v - 1 + maxVal) % maxVal;
+      return (v + 1) % maxVal;
     });
   }, []);
 
@@ -38,6 +40,7 @@ export default function TimePicker({ value, onChange, lang }) {
     if (open) {
       setEditHour(initHour);
       setEditMin(initMin);
+      setEditing(null);
     }
   }, [open]);
 
@@ -52,6 +55,14 @@ export default function TimePicker({ value, onChange, lang }) {
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
   }, [open]);
+
+  // Auto-focus and select input content when entering edit mode
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
 
   // Auto-commit edit state when popup closes
   useEffect(() => {
@@ -73,8 +84,58 @@ export default function TimePicker({ value, onChange, lang }) {
     setOpen(false);
   };
 
+  const handleInputChange = (e, setter, maxVal) => {
+    const raw = e.target.value;
+    // Allow empty for clearing
+    if (raw === "") {
+      setter(0);
+      return;
+    }
+    const num = parseInt(raw.replace(/\D/g, ""), 10);
+    if (isNaN(num)) return;
+    if (num >= maxVal) {
+      setter(maxVal - 1);
+    } else {
+      setter(num);
+    }
+  };
+
+  const handleInputKeyDown = (e, field) => {
+    if (e.key === "Enter") {
+      setEditing(null);
+    }
+  };
+
   const hStr = String(editHour).padStart(2, "0");
   const mStr = String(editMin).padStart(2, "0");
+
+  const renderValueCell = (field, valueStr, setter, maxVal) => {
+    if (editing === field) {
+      return (
+        <input
+          ref={inputRef}
+          className="timepicker-input"
+          type="text"
+          inputMode="numeric"
+          value={valueStr}
+          onChange={(e) => handleInputChange(e, setter, maxVal)}
+          onKeyDown={(e) => handleInputKeyDown(e, field)}
+          onBlur={() => setEditing(null)}
+          maxLength={2}
+          autoComplete="off"
+        />
+      );
+    }
+    return (
+      <span
+        className="timepicker-value"
+        onClick={() => setEditing(field)}
+        onWheel={handleWheel(setter, maxVal)}
+      >
+        {valueStr}
+      </span>
+    );
+  };
 
   return (
     <div className="timepicker-wrapper" ref={wrapperRef}>
@@ -106,11 +167,7 @@ export default function TimePicker({ value, onChange, lang }) {
                   <polyline points="18 15 12 9 6 15" />
                 </svg>
               </button>
-              <span
-                className="timepicker-value"
-                onClick={handleSelect}
-                onWheel={handleWheel(setEditHour, 24)}
-              >{hStr}</span>
+              {renderValueCell("hour", hStr, setEditHour, 24)}
               <button
                 type="button"
                 className="timepicker-arrow"
@@ -137,11 +194,7 @@ export default function TimePicker({ value, onChange, lang }) {
                   <polyline points="18 15 12 9 6 15" />
                 </svg>
               </button>
-              <span
-                className="timepicker-value"
-                onClick={handleSelect}
-                onWheel={handleWheel(setEditMin, 60)}
-              >{mStr}</span>
+              {renderValueCell("minute", mStr, setEditMin, 60)}
               <button
                 type="button"
                 className="timepicker-arrow"

@@ -47,6 +47,19 @@
 .timepicker-value:hover { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.08) }
 .timepicker-value:active { transform: scale(0.95) }
 
+.timepicker-input {
+  display: flex; align-items: center; justify-content: center;
+  width: 42px; height: 32px; background: var(--bg-input);
+  border: 1px solid var(--border-glass); border-radius: 6px;
+  font-size: 16px; font-weight: 600; color: var(--text-primary);
+  font-family: inherit; text-align: center; outline: none;
+  padding: 0; margin: 0; caret-color: var(--accent);
+  transition: border-color var(--transition-fast);
+  -webkit-appearance: none;
+}
+.timepicker-input:focus { border-color: rgba(16, 185, 129, 0.6) }
+.timepicker-input::selection { background: rgba(16, 185, 129, 0.25) }
+
 .timepicker-sep { font-size: 16px; font-weight: 600; color: var(--text-tertiary); align-self: center }
 
 /* ── Link URL input in bottom panel ── */
