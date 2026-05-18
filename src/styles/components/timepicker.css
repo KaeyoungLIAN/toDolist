@@ -82,7 +82,7 @@
   border-radius: 4px; color: var(--text-secondary); font-size: 11px;
   font-family: inherit; cursor: pointer; outline: none;
   transition: border-color 200ms var(--ease-out), transform var(--transition-fast);
-  white-space: nowrap; line-height: 1; flex-shrink: 0; width: auto;
+  white-space: nowrap; line-height: 1; flex: none;
 }
 .advance-trigger:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-1px) }
 .advance-trigger svg { opacity: 0.45; flex-shrink: 0; width: 10px; height: 10px }

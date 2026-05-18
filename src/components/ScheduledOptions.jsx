@@ -63,7 +63,7 @@ export default function ScheduledOptions({
             <TimePicker value={onceTime} onChange={onOnceTimeChange} lang={lang} />
             <div className="advance-wrapper" ref={advanceRef}>
               <button className="advance-trigger" onClick={() => setAdvanceOpen(!advanceOpen)}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 {advanceLabel(advanceMin)}
               </button>
               {advanceOpen && (
@@ -96,7 +96,7 @@ export default function ScheduledOptions({
             <TimePicker value={weeklyTime} onChange={onWeeklyTimeChange} lang={lang} />
             <div className="advance-wrapper" ref={advanceRef}>
               <button className="advance-trigger" onClick={() => setAdvanceOpen(!advanceOpen)}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 {advanceLabel(advanceMin)}
               </button>
               {advanceOpen && (
