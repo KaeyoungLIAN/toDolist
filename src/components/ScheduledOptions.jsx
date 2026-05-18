@@ -36,7 +36,7 @@ export default function ScheduledOptions({
 
   const advanceLabel = (m) => {
     if (m === 0) return t(lang, "remindOnTime");
-    return `${m}${t(lang, "minAbbr")}`;
+    return t(lang, "advanceFormat").replace("{0}", String(m));
   };
 
   return (
