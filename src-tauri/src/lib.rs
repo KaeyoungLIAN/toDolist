@@ -344,11 +344,11 @@ fn toggle_complete(state: State<'_, AppState>, app: AppHandle, id: u32) -> Resul
 fn check_and_notify(state: State<'_, AppState>, app: AppHandle) -> Result<Vec<String>, String> {
     use tauri_plugin_notification::NotificationExt;
     match app.notification().permission_state() {
-        tauri_plugin_notification::PermissionState::Denied => {
+        Ok(tauri_plugin_notification::PermissionState::Denied) => {
             return Ok(vec![]);
         }
-        tauri_plugin_notification::PermissionState::Prompt => {
-            let _ = app.notification().request_permission()?;
+        Ok(tauri_plugin_notification::PermissionState::Prompt) => {
+            let _ = app.notification().request_permission();
         }
         _ => {}
     }
